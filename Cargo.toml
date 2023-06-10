@@ -4,3 +4,6 @@ members = [
     "raytracer",
     "raytracer_codegen",
 ]
+authors =[
+    "jiejiang <509745383@qq.com>"
+]
