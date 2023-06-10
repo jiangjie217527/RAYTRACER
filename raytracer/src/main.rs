@@ -38,7 +38,7 @@ fn get_text() -> String {
 fn is_ci() -> bool {
     option_env!("CI").unwrap_or_default() == "true"
 }
-
+/*
 fn render_text(image: &mut RgbImage, msg: &str) {
     let font_file = if is_ci() {
         "EncodeSans[wdth,wght].ttf"
@@ -64,7 +64,7 @@ fn render_text(image: &mut RgbImage, msg: &str) {
         msg,
     );
 }
-
+*/
 fn main() {
     // get environment variable CI, which is true for GitHub Action
     let is_ci = is_ci();
@@ -134,7 +134,7 @@ fn main() {
     let msg = get_text();
     println!("Extra Info: {}", msg);
 
-    render_text(&mut result, msg.as_str());
+    //render_text(&mut result, msg.as_str());
 
     result.save("output/test.png").unwrap();
 }
