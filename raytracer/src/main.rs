@@ -7,7 +7,7 @@ mod vec3;
 
 use image::{ImageBuffer, Rgb, RgbImage};
 use indicatif::ProgressBar;
-use rusttype::Font;
+//use rusttype::Font;
 use scene::example_scene;
 use std::sync::mpsc::channel;
 use std::sync::Arc;
@@ -77,7 +77,6 @@ fn main() {
         "CI: {}, using {} jobs and {} workers",
         is_ci, n_jobs, n_workers
     );
-
     let height = 512;
     let width = 1024;
 
