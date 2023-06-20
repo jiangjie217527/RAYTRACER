@@ -1,38 +1,37 @@
 pub use crate::vec3::Vec3;
 #[derive(Clone, Debug, PartialEq)]
-pub struct Data{
-    pub height:usize,
+pub struct Data {
+    pub height: usize,
     pub width: usize,
-    pub quality:u8,
+    pub quality: u8,
 
-    pub ratio:f64,
-    pub viewport_height:f64,
-    pub viewport_width:f64,
+    pub ratio: f64,
+    pub viewport_height: f64,
+    pub viewport_width: f64,
 
-    pub origin:Vec3,
-    pub  lower_left_corner:Vec3,
-    pub horizontal:Vec3,
-    pub  vertical:Vec3,
+    pub origin: Vec3,
+    pub lower_left_corner: Vec3,
+    pub horizontal: Vec3,
+    pub vertical: Vec3,
 }
 
-impl Data{
-    pub fn new(height:usize,width:usize,
-        quality:u8,ratio:f64,viewport_height:f64)->Self{
-        Self{
+impl Data {
+    pub fn new(height: usize, width: usize, quality: u8, ratio: f64, viewport_height: f64) -> Self {
+        Self {
             height,
             width,
             quality,
             ratio,
             viewport_height,
-            origin:Vec3::zero(),
-            viewport_width:viewport_height*ratio,
-            horizontal:Vec3::new(viewport_height,0.0,0.0),
-            vertical:Vec3::new(0.0,viewport_height*ratio,0.0),
-            lower_left_corner:Vec3::zero() + Vec3::new(-0.5*viewport_height*ratio,-0.5*viewport_height,-1.0),
+            origin: Vec3::zero(),
+            viewport_width: viewport_height * ratio,
+            horizontal: Vec3::new(viewport_height, 0.0, 0.0),
+            vertical: Vec3::new(0.0, viewport_height * ratio, 0.0),
+            lower_left_corner: Vec3::zero()
+                + Vec3::new(-0.5 * viewport_height * ratio, -0.5 * viewport_height, -1.0),
         }
     }
 }
-
 
 //     let height: usize = 800;
 // let width: usize = 800;

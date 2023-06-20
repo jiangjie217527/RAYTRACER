@@ -12,7 +12,7 @@ impl Ray {
             b_direction,
         }
     }
-    pub fn at(&self,t:f64)->Vec3{
-        self.a_origin.clone()+self.b_direction.clone()*t
+    pub fn at(&self, t: f64) -> Vec3 {
+        self.a_origin.clone() + self.b_direction.clone() * t
     }
 }
