@@ -1,5 +1,5 @@
-use crate::ray::Ray;
-use crate::vec3::Vec3;
+pub use crate::ray::Ray;
+pub use crate::vec3::Vec3;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Sphere {
     pub center: Vec3,
@@ -10,11 +10,11 @@ impl Sphere {
     pub fn hit_sphere(&self, r: Ray) -> f64 {
         let ac = r.a_origin - self.center.clone();
         let a = r.b_direction.squared_length();
-        let b = (ac.clone() * r.b_direction) * 2.0;
+        let half_b = ac.clone() * r.b_direction;
         let c = ac.squared_length() - self.r * self.r;
-        let dos = b * b - a * c * 4.0;
+        let dos = half_b * half_b - a * c ;
         if dos > 0.0 {
-            (-b - f64::sqrt(dos)) / (2.0 * a)
+            (-half_b - f64::sqrt(dos)) / a
         } else {
             -1.0
         }

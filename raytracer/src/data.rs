@@ -5,6 +5,8 @@ pub struct Data {
     pub width: usize,
     pub quality: u8,
 
+    pub sample_times: usize,
+
     pub ratio: f64,
     pub viewport_height: f64,
     pub viewport_width: f64,
@@ -16,11 +18,12 @@ pub struct Data {
 }
 
 impl Data {
-    pub fn new(height: usize, width: usize, quality: u8, ratio: f64, viewport_height: f64) -> Self {
+    pub fn new(height: usize, width: usize, quality: u8,sample_times:usize, ratio: f64, viewport_height: f64) -> Self {
         Self {
             height,
             width,
             quality,
+            sample_times,
             ratio,
             viewport_height,
             origin: Vec3::zero(),

@@ -5,12 +5,12 @@ mod render;
 mod sphere;
 mod vec3;
 
-use image::RgbImage;
-use indicatif::ProgressBar;
+use image::RgbImage;//接收render传回来的图片，在main中文件输出
+use indicatif::ProgressBar;//main中产生进度条并传给render
 use std::fs::File;
 
-use data::Data;
-use render::render;
+use data::Data;      //数据层
+use render::render;  //渲染层
 
 const AUTHOR: &str = "停云别叫恩公,叫___";
 fn is_ci() -> bool {
@@ -18,11 +18,12 @@ fn is_ci() -> bool {
 }
 
 fn main() {
+    //f64::INFINITY;std::f64::consts::PI;
     // get environment variable CI, which is true for GitHub Actions
     let is_ci: bool = is_ci();
     println!("CI: {}", is_ci);
     let path = "output/test.jpg";
-    let data = Data::new(800, 800, 60, 1.0, 2.0);
+    let data = Data::new(800, 800, 60,4 ,1.0, 2.0);
 
     let bar: ProgressBar = if is_ci {
         ProgressBar::hidden()
@@ -30,7 +31,7 @@ fn main() {
         ProgressBar::new((data.height * data.width) as u64)
     };
 
-    let img: RgbImage = render(data.clone(), bar);
+    let img: RgbImage = render(&data, bar); //data一定要引用
 
     // Output image to file
     println!("Ouput image as \"{}\"\n Author: {}", path, AUTHOR);
