@@ -5,12 +5,12 @@ mod render;
 mod sphere;
 mod vec3;
 
-use image::RgbImage;//接收render传回来的图片，在main中文件输出
-use indicatif::ProgressBar;//main中产生进度条并传给render
+use image::RgbImage; //接收render传回来的图片，在main中文件输出
+use indicatif::ProgressBar; //main中产生进度条并传给render
 use std::fs::File;
 
-use data::Data;      //数据层
-use render::render;  //渲染层
+use data::Data; //数据层
+use render::render; //渲染层
 
 const AUTHOR: &str = "停云别叫恩公,叫___";
 fn is_ci() -> bool {
@@ -23,7 +23,7 @@ fn main() {
     let is_ci: bool = is_ci();
     println!("CI: {}", is_ci);
     let path = "output/test.jpg";
-    let data = Data::new(800, 800, 60,4 ,1.0, 2.0);
+    let data = Data::new(800, 800, 60, 4, 1.0, 2.0);
 
     let bar: ProgressBar = if is_ci {
         ProgressBar::hidden()

@@ -12,7 +12,7 @@ impl Sphere {
         let a = r.b_direction.squared_length();
         let half_b = ac.clone() * r.b_direction;
         let c = ac.squared_length() - self.r * self.r;
-        let dos = half_b * half_b - a * c ;
+        let dos = half_b * half_b - a * c;
         if dos > 0.0 {
             (-half_b - f64::sqrt(dos)) / a
         } else {

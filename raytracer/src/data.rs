@@ -18,7 +18,14 @@ pub struct Data {
 }
 
 impl Data {
-    pub fn new(height: usize, width: usize, quality: u8,sample_times:usize, ratio: f64, viewport_height: f64) -> Self {
+    pub fn new(
+        height: usize,
+        width: usize,
+        quality: u8,
+        sample_times: usize,
+        ratio: f64,
+        viewport_height: f64,
+    ) -> Self {
         Self {
             height,
             width,
