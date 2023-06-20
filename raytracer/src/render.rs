@@ -24,7 +24,7 @@ fn ray_color(r: Ray, v: &Vec<Sphere>) -> [u8; 3] {
         } else {
             //这里要注意不能为0
             t = tmp;
-            sphere = &i;
+            sphere = i;
         }
     }
 
@@ -64,12 +64,13 @@ pub fn render(data: &Data, bar: ProgressBar) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
     let height = data.height;
     let mut img: RgbImage = ImageBuffer::new(width.try_into().unwrap(), height.try_into().unwrap());
 
-    let mut sphere_list: Vec<Sphere> = Vec::new();
-    sphere_list.push(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5));
-    sphere_list.push(Sphere {
-        center: (Vec3::new(0.0, -101.5, -1.0)),
-        r: (100.0),
-    });
+    let sphere_list: Vec<Sphere> = vec![
+        Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5),
+        Sphere {
+            center: (Vec3::new(0.0, -101.5, -1.0)),
+            r: (100.0),
+        },
+    ];
 
     let mut random: ThreadRng = rand::thread_rng();
     //产生物体
@@ -96,8 +97,8 @@ pub fn render(data: &Data, bar: ProgressBar) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
                     sum_pixel_color[l] += tmp_pixel_color[l] as u32;
                 }
             }
-            for l in 0..3 {
-                sum_pixel_color[l] /= data.sample_times as u32;
+            for element in &mut sum_pixel_color {
+                *element /= data.sample_times as u32;
             }
             let pixel_color: [u8; 3] = [
                 sum_pixel_color[0] as u8,
