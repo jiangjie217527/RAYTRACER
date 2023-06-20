@@ -7,8 +7,7 @@ use image::{ImageBuffer, Rgb, RgbImage};
 use indicatif::ProgressBar;
 
 fn color(x: f64, y: f64, z: f64) -> [u8; 3] {
-    let a = [(255.0 * x) as u8, (255.0 * y) as u8, (255.0 * z) as u8];
-    a
+    [(255.0 * x) as u8, (255.0 * y) as u8, (255.0 * z) as u8]
 }
 
 fn ray_color(r: Ray, sphere: Sphere) -> [u8; 3] {
@@ -53,5 +52,5 @@ pub fn render(data: Data, bar: ProgressBar) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
         }
     }
     bar.finish();
-    return img;
+    img
 }

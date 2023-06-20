@@ -21,9 +21,9 @@ impl Vec3 {
         Self { x, y, z }
     }
 
-    pub fn ones() -> Self {
-        Self::new(1.0, 1.0, 1.0)
-    }
+    // pub fn ones() -> Self {
+    //     Self::new(1.0, 1.0, 1.0)
+    // }
 
     pub fn zero() -> Self {
         Self::new(0.0, 0.0, 0.0)
