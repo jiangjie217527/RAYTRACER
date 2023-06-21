@@ -4,6 +4,7 @@ mod ray;
 mod render;
 mod sphere;
 mod vec3;
+mod util;
 
 use image::RgbImage; //接收render传回来的图片，在main中文件输出
 use indicatif::ProgressBar; //main中产生进度条并传给render
@@ -23,7 +24,7 @@ fn main() {
     let is_ci: bool = is_ci();
     println!("CI: {}", is_ci);
     let path = "output/test.jpg";
-    let data = Data::new(800, 800, 60, 4, 1.0, 2.0);
+    let data = Data::new(800, 800, 60, 2,4,20, 1.0, 2.0);
 
     let bar: ProgressBar = if is_ci {
         ProgressBar::hidden()

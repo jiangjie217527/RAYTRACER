@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Mul, Sub};
+use std::ops::{Add, AddAssign, Mul, Sub,Div};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Vec3 {
@@ -6,7 +6,36 @@ pub struct Vec3 {
     y: f64,
     z: f64,
 }
+impl Mul for Vec3 {
+    type Output = f64;
+    fn mul(self, other: Vec3) -> f64 {
+        self.x * other.x + self.y * other.y + self.z * other.z
+    }
+}
 
+impl Mul<f64> for Vec3 {
+    type Output = Self;
+
+    fn mul(self, other: f64) -> Self {
+        Self {
+            x: self.x * other,
+            y: self.y * other,
+            z: self.z * other,
+        }
+    }
+}
+
+impl Div<f64> for Vec3 {
+    type Output = Self;
+
+    fn div(self, other: f64) -> Self {
+        Self {
+            x: self.x / other,
+            y: self.y / other,
+            z: self.z / other,
+        }
+    }
+}
 impl Vec3 {
     pub fn x(&self) -> f64 {
         self.x
@@ -78,25 +107,6 @@ impl Sub for Vec3 {
             x: self.x - other.x,
             y: self.y - other.y,
             z: self.z - other.z,
-        }
-    }
-}
-
-impl Mul for Vec3 {
-    type Output = f64;
-    fn mul(self, other: Vec3) -> f64 {
-        self.x * other.x + self.y * other.y + self.z * other.z
-    }
-}
-
-impl Mul<f64> for Vec3 {
-    type Output = Self;
-
-    fn mul(self, other: f64) -> Self {
-        Self {
-            x: self.x * other,
-            y: self.y * other,
-            z: self.z * other,
         }
     }
 }

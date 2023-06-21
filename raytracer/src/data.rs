@@ -4,8 +4,10 @@ pub struct Data {
     pub height: usize,
     pub width: usize,
     pub quality: u8,
+    pub gamma:u8,
 
-    pub sample_times: usize,
+    pub sample_times: u32,
+    pub depth:u32,
 
     pub ratio: f64,
     pub viewport_height: f64,
@@ -22,7 +24,9 @@ impl Data {
         height: usize,
         width: usize,
         quality: u8,
-        sample_times: usize,
+        gamma:u8,
+        sample_times: u32,
+        depth:u32,
         ratio: f64,
         viewport_height: f64,
     ) -> Self {
@@ -30,6 +34,8 @@ impl Data {
             height,
             width,
             quality,
+            gamma,
+            depth,
             sample_times,
             ratio,
             viewport_height,
