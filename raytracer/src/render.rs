@@ -21,10 +21,14 @@ fn random_in_unit_shpere()->Vec3{
         if p.squared_length() >= 1.0{
             continue;
         }
-        
         return unit_vec(p);
     }
     
+}
+
+fn reflect(v:Vec3,n:Vec3)->Vec3{
+    println!("!");
+    v.clone()-n.clone()*(v*n)*2.0
 }
 
 fn ray_color(r: Ray, v: &Vec<Sphere>,depth:u32) -> [u8; 3] {
@@ -51,13 +55,26 @@ fn ray_color(r: Ray, v: &Vec<Sphere>,depth:u32) -> [u8; 3] {
         //有正确的交点
         let p = r.at(t);
         let n: Vec3 = p.clone() - sphere.center.clone(); //法向量
-        let normal:Vec3 = unit_vec(n); 
-        let mut tmp = ray_color(Ray { a_origin: (p), b_direction: (normal+random_in_unit_shpere()) },
-         v,depth -1);
+        let normal:Vec3 = unit_vec(n.clone()); 
+        let mut tmp: [u8; 3];
+        if sphere.tp==1{
+            let mut scatter: Vec3 = normal.clone()+random_in_unit_shpere();
+            if scatter.near_zero(){
+                scatter = normal;
+            }
+            tmp = ray_color(Ray { a_origin: (p), b_direction: (scatter) },
+            v,depth -1);
+        }
+        else {
+            let reflect_scatter = reflect(r.b_direction, n);
+            tmp = ray_color(Ray { a_origin: (p), b_direction: (reflect_scatter) },
+             v, depth-1);
+        }
         for l in 0..3{
             tmp[l]/=2;
         }
-        tmp
+        tmp 
+
     } else {
         //没交点那就是跟背景板有交点
         let unit_dir: Vec3 = unit_vec(r.b_direction);
@@ -82,17 +99,20 @@ pub fn render(data: &Data, bar: ProgressBar) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
     let mut img: RgbImage = ImageBuffer::new(width.try_into().unwrap(), height.try_into().unwrap());
 
     let sphere_list: Vec<Sphere> = vec![
-        Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5),
+        Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5,1),
         Sphere {
             center: (Vec3::new(0.0, -100.5, -1.0)),
             r: (100.0),
+            tp:(1),
         },
+        // Sphere {
+        //     center: (Vec3::new(100.0, 0.0, -1.0)),
+        //     r: (0.5),
+        //     tp:(2),
+        // },
     ];
 
     let mut random: ThreadRng = rand::thread_rng();
-    //产生物体
-    //let center: Vec3 = Vec3::new(0.0, 0.0, -1.0);
-    //let sphere: Sphere = Sphere::new(center, 0.5); //这里center就没了
     for j in 0..height {
         //对于每个像素，发出对应方向的光线
         for i in 0..width {
@@ -114,12 +134,7 @@ pub fn render(data: &Data, bar: ProgressBar) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
                     sum_pixel_color[l] += tmp_pixel_color[l] as f64;
                 }
             }
-            // for l in 0..3{
-            //     sum_pixel_color[l]=((sum_pixel_color[l]/data.sample_times as f64) / 255.0).powf(1.0/(data.gamma as f64))*255.0;
-            // }
             for element in &mut sum_pixel_color {
-                // *element /= (data.sample_times*255) as f64;
-                // *element = element.powf(1.0/(data.gamma as f64));
                 *element=(*element / (data.sample_times*255) as f64)
                 .powf(1.0/(data.gamma as f64))*255.0;
             }

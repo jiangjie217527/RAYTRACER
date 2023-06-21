@@ -58,6 +58,15 @@ impl Vec3 {
         Self::new(0.0, 0.0, 0.0)
     }
 
+    pub fn near_zero(&self)->bool{
+        if self.x() <1e8 && self.x() > -1e8 && self.y() <1e8 && self.y() > -1e8 &&self.z() <1e8 && self.z() > -1e8 {
+            true
+        }
+        else {
+            false
+        }
+    }
+
     pub fn squared_length(&self) -> f64 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }

@@ -2,6 +2,7 @@ pub use crate::ray::Ray;
 pub use crate::vec3::Vec3;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Sphere {
+    pub tp: u8,
     pub center: Vec3,
     pub r: f64,
 }
@@ -19,7 +20,7 @@ impl Sphere {
             -1.0
         }
     }
-    pub fn new(center: Vec3, r: f64) -> Self {
-        Self { center, r }
+    pub fn new(center: Vec3, r: f64,tp:u8) -> Self {
+        Self { center, r ,tp,}
     }
 }
