@@ -5,6 +5,9 @@ pub struct Sphere {
     pub tp: u8,
     pub center: Vec3,
     pub r: f64,
+    pub color: [u8; 3],
+    pub fuzz: f64, //金属磨砂效果
+    pub etia: f64, //折射率
 }
 
 impl Sphere {
@@ -20,7 +23,24 @@ impl Sphere {
             -1.0
         }
     }
-    pub fn new(center: Vec3, r: f64,tp:u8) -> Self {
-        Self { center, r ,tp,}
+    pub fn new(center: Vec3, r: f64, tp: u8, color: [u8; 3], fuzz: f64, etia: f64) -> Self {
+        Self {
+            center,
+            r,
+            tp,
+            fuzz,
+            color,
+            etia,
+        }
+    }
+    pub fn empty_sphere() -> Self {
+        Self {
+            tp: (255),
+            center: (Vec3::zero()),
+            r: (0.0),
+            color: ([0; 3]),
+            fuzz: 0.0,
+            etia: 0.0,
+        }
     }
 }

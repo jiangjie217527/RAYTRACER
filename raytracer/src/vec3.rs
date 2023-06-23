@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Mul, Sub,Div};
+use std::ops::{Add, AddAssign, Div, Mul, Sub};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Vec3 {
@@ -58,11 +58,16 @@ impl Vec3 {
         Self::new(0.0, 0.0, 0.0)
     }
 
-    pub fn near_zero(&self)->bool{
-        if self.x() <1e8 && self.x() > -1e8 && self.y() <1e8 && self.y() > -1e8 &&self.z() <1e8 && self.z() > -1e8 {
+    pub fn near_zero(&self) -> bool {
+        if self.x() < 0.00000001
+            && self.x() > -0.00000001
+            && self.y() < 0.00000001
+            && self.y() > -0.00000001
+            && self.z() < 0.00000001
+            && self.z() > -0.00000001
+        {
             true
-        }
-        else {
+        } else {
             false
         }
     }
@@ -73,6 +78,21 @@ impl Vec3 {
     pub fn length(&self) -> f64 {
         f64::sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
     }
+
+    pub fn cross(&self, other: Vec3) -> Self {
+        let x = self.y * other.z - self.z * other.y;
+        let y = self.z * other.x - self.x * other.z;
+        let z = self.x * other.y - self.y * other.x;
+        Vec3 {
+            x: (x),
+            y: (y),
+            z: (z),
+        }
+    }
+
+    // pub fn info(&self) {
+    //     println!("x={},y={},z={}", self.x, self.y, self.z);
+    // }
 }
 
 impl Add for Vec3 {
