@@ -30,15 +30,18 @@ pub fn fabs(num: f64) -> f64 {
 //折射模块，还有点问题
 pub fn reflectance(cos_theta: f64, ratio: f64) -> f64 {
     let r0 = (1.0 - ratio) / (1.0 + ratio);
-    r0 * r0 + (1.0 - r0) * f64::powf(1.0 - cos_theta, 5.0)
+    let t = r0 * r0;
+    t + (1.0 - t) * f64::powf(1.0 - cos_theta, 5.0)
 }
 
+//ratio is etia / etia prime i.e the sphere is under the fraction
 pub fn refract(v: Vec3, n: Vec3, ratio: f64) -> Vec3 {
     //v,n为单位向量
+    //按道理应该不会有cos比1大
     let cos_theta = (Vec3::zero() - v.clone()) * n.clone();
     let sin_theta = f64::sqrt(1.0 - cos_theta * cos_theta);
     let mut random: ThreadRng = rand::thread_rng();
-    if (1.0 / ratio) * sin_theta >= 1.0 || reflectance(cos_theta, ratio) > random.gen::<f64>() {
+    if ratio * sin_theta >= 1.0 || reflectance(cos_theta, ratio) > random.gen::<f64>() {
         //println!("reflect");
         reflect(v, n)
     } else {
@@ -64,7 +67,7 @@ pub fn random_in_unit_shpere() -> Vec3 {
         if p.squared_length() >= 1.0 {
             continue;
         }
-        let tmp = unit_vec(p);
+        let tmp: Vec3 = unit_vec(p);
         if tmp.near_zero() {
             return Vec3::zero();
         } else {
@@ -104,9 +107,16 @@ pub fn hittable(r: Ray, v: &Vec<Sphere>) -> (f64, Sphere) {
     let t_min = 0.001;
     let mut sphere = &Sphere::empty_sphere();
     for i in v {
-        let tmp = i.hit_sphere(r.clone());
+        let (tmp, delta) = i.hit_sphere(r.clone());
         if tmp < t_min || tmp > t {
-            continue;
+            let tmp = tmp + delta;
+            //可能影响折射
+            if tmp < t_min || tmp > t {
+                continue;
+            } else {
+                t = tmp;
+                sphere = i;
+            }
         } else {
             t = tmp;
             sphere = i;

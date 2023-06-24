@@ -11,7 +11,7 @@ pub use crate::vec3::Vec3;
 use image::{ImageBuffer, Rgb, RgbImage};
 use indicatif::ProgressBar;
 use rand::{rngs::ThreadRng, Rng};
-use std::sync::{Mutex,Arc};
+use std::sync::{Arc, Mutex};
 use std::thread;
 
 fn ray_color(r: Ray, v: &Vec<Sphere>, depth: u32) -> [u8; 3] {
@@ -22,9 +22,8 @@ fn ray_color(r: Ray, v: &Vec<Sphere>, depth: u32) -> [u8; 3] {
 
     if t != f64::INFINITY {
         //有正确的交点
-        let p = r.at(t);
-        let n: Vec3 = p.clone() - sphere.center.clone(); //法向量
-        let normal: Vec3 = unit_vec(n);
+        let p: Vec3 = r.at(t);
+        let normal: Vec3 = unit_vec(p.clone() - sphere.center.clone());
         let mut tmp: [u8; 3];
 
         //漫反射材料
@@ -40,8 +39,8 @@ fn ray_color(r: Ray, v: &Vec<Sphere>, depth: u32) -> [u8; 3] {
                 depth - 1,
             );
             for l in 0..3 {
-                tmp[l] = tmp[l] / 2 + sphere.color[l] / 2;
-            } //一半反光，一般自己的颜色
+                tmp[l] = (tmp[l] as f64 * ((sphere.color[l] as f64) / 255.0)) as u8;
+            }
         }
         //金属材料
         else if sphere.tp == 2 {
@@ -57,11 +56,20 @@ fn ray_color(r: Ray, v: &Vec<Sphere>, depth: u32) -> [u8; 3] {
                 depth - 1,
             );
             for l in 0..3 {
-                tmp[l] = tmp[l] / 5 * 4 + sphere.color[l] / 5;
-            } //反光更多一点
+                tmp[l] = (tmp[l] as f64 * ((sphere.color[l] as f64) / 255.0)) as u8;
+            }
         } else {
             //折射
-            let refract = refract(unit_vec(r.b_direction), normal, 1.0 / sphere.etia);
+            let ratio;
+            let dir;
+            if sphere.front_back(r.b_direction.clone(), normal.clone()) {
+                ratio = 1.0 / sphere.etia;
+                dir = 1.0;
+            } else {
+                ratio = sphere.etia;
+                dir = -1.0;
+            }
+            let refract = refract(unit_vec(r.b_direction), normal * dir, ratio);
 
             tmp = ray_color(
                 Ray {
@@ -71,9 +79,6 @@ fn ray_color(r: Ray, v: &Vec<Sphere>, depth: u32) -> [u8; 3] {
                 v,
                 depth - 1,
             );
-            // for l in 0..3 {
-            //     tmp[l] = tmp[l];
-            // } //反光更多一点
         }
         tmp
     } else {
@@ -88,11 +93,18 @@ fn ray_color(r: Ray, v: &Vec<Sphere>, depth: u32) -> [u8; 3] {
     }
 }
 
-pub fn pixel_color(i:usize,j:usize,camera: &Camera,sphere_list: &Vec<Sphere>,width:usize,height:usize,depth:u32)->[u8;3]{
+pub fn pixel_color(
+    i: usize,
+    j: usize,
+    camera: &Camera,
+    sphere_list: &Vec<Sphere>,
+    width: usize,
+    height: usize,
+    depth: u32,
+) -> [u8; 3] {
     let mut random: ThreadRng = rand::thread_rng();
     let s: f64 = ((i as f64) + random.gen::<f64>()) / ((width - 1) as f64); //行不变，竖直
-    let t: f64 =
-        (((height - 1 - j) as f64) + random.gen::<f64>()) / ((height - 1) as f64);
+    let t: f64 = (((height - 1 - j) as f64) + random.gen::<f64>()) / ((height - 1) as f64);
     //由于要产生新的变量所以不能引用
     let rd = random_in_unit_disk() * camera.len_radius;
     let offset = camera.u.clone() * rd.x() + camera.v.clone() * rd.y();
@@ -111,13 +123,6 @@ pub fn pixel_color(i:usize,j:usize,camera: &Camera,sphere_list: &Vec<Sphere>,wid
     ray_color(r, &sphere_list, depth)
 }
 
-// pub fn wait(v:&Vec<std::thread::JoinHandle<()>>){
-//     for i in v{
-//         i.join().unwrap();
-//     }
-// }
-
-
 pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
     let width = data.width;
     let height = data.height;
@@ -131,31 +136,31 @@ pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<
     let image = Arc::new(Mutex::new(img));
     let cam = Arc::new(camera);
     let sph_lst = Arc::new(sphere_list);
-    let bar= Arc::new(bar);
+    let bar = Arc::new(bar);
 
     let mut handles = vec![];
     for j in 0..height {
-        //对于每个像素，发出对应方向的光线
+        //以下开始一个线程  对共享内存的复制
         let c = Arc::clone(&cam);
         let sph = Arc::clone(&sph_lst);
         let bar = Arc::clone(&bar);
-
+        //共享可写内存：上互斥锁
         let image = Arc::clone(&image);
-        let handle = thread::spawn(move||{
+        //开始线程
+        let handle = thread::spawn(move || {
             for i in 0..width {
-            //单个像素的总和
-                let mut sum_pixel_color: [f64; 3] = [0.0;3];
-                
-                for _k in 0..sample{
-                    let tmp_pixel_color: [u8; 3] = pixel_color(i,j,&c,&sph,width,height,depth);
-                    for i in 0..3{
-                        sum_pixel_color[i]+=tmp_pixel_color[i] as f64;
+                let mut sum_pixel_color: [f64; 3] = [0.0; 3];
+
+                for _k in 0..sample {
+                    let tmp_pixel_color: [u8; 3] =
+                        pixel_color(i, j, &c, &sph, width, height, depth);
+                    for i in 0..3 {
+                        sum_pixel_color[i] += tmp_pixel_color[i] as f64;
                     }
                 }
                 for element in &mut sum_pixel_color {
-                    *element = (*element / (sample * 255) as f64)
-                        .powf(1.0 / (gamma as f64))
-                        * 255.0;
+                    *element =
+                        (*element / (sample * 255) as f64).powf(1.0 / (gamma as f64)) * 255.0;
                 }
                 let pixel_color: [u8; 3] = [
                     sum_pixel_color[0] as u8,
@@ -163,14 +168,15 @@ pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<
                     sum_pixel_color[2] as u8,
                 ];
                 let mut img = image.lock().unwrap();
-                write_color(pixel_color,&mut (*img), i, j);
-                (*bar).inc(1); 
+                write_color(pixel_color, &mut (*img), i, j);
+                (*bar).inc(1);
             }
         });
+        //加入线程
         handles.push(handle);
-        }
-
-    for i in handles{
+    }
+    //等待所有线程结束
+    for i in handles {
         i.join().unwrap();
     }
     bar.finish();

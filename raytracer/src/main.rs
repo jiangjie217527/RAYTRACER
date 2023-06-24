@@ -30,15 +30,15 @@ fn main() {
     let is_ci: bool = is_ci();
     println!("CI: {}", is_ci);
     let path = "output/test.jpg";
-    let data = Data::new(800, 800, 60, 2, 24, 20);
+    let data = Data::new(1000, 1500, 60, 2, 4, 20);
     let origin = Vec3::new(13.0, 2.0, 3.0);
-    let lookat = Vec3::zero();
+    let lookat = Vec3::new(0.0, 0.0, 0.0);
     let camera = Camera::new(
-        1.0,
+        data.width as f64 / data.height as f64,
         2.0,
         origin.clone(),
         lookat.clone(),
-        std::f64::consts::PI / 5.0,
+        std::f64::consts::PI / 9.0,
         0.1,
         //(origin-lookat).length(),
         10.0,
