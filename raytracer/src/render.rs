@@ -88,7 +88,7 @@ fn ray_color(r: Ray, v: &Vec<Sphere>, depth: u32) -> [u8; 3] {
     }
 }
 
-pub fn pixel_color(i:usize,j:usize,camera: Camera,sphere_list: Vec<Sphere>,width:usize,height:usize,depth:u32)->[u8;3]{
+pub fn pixel_color(i:usize,j:usize,camera: &Camera,sphere_list: &Vec<Sphere>,width:usize,height:usize,depth:u32)->[u8;3]{
     let mut random: ThreadRng = rand::thread_rng();
     let s: f64 = ((i as f64) + random.gen::<f64>()) / ((width - 1) as f64); //行不变，竖直
     let t: f64 =
@@ -111,68 +111,69 @@ pub fn pixel_color(i:usize,j:usize,camera: Camera,sphere_list: Vec<Sphere>,width
     ray_color(r, &sphere_list, depth)
 }
 
+// pub fn wait(v:&Vec<std::thread::JoinHandle<()>>){
+//     for i in v{
+//         i.join().unwrap();
+//     }
+// }
+
+
 pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
     let width = data.width;
     let height = data.height;
     let depth = data.depth;
-    let mut img: RgbImage = ImageBuffer::new(width.try_into().unwrap(), height.try_into().unwrap());
+    let sample = data.sample_times;
+    let gamma = data.gamma;
+
+    let img: RgbImage = ImageBuffer::new(width.try_into().unwrap(), height.try_into().unwrap());
     let sphere_list: Vec<Sphere> = init();
-    let cam = Arc::new(camera.clone());
-    let sph_lst = Arc::new(sphere_list.clone());
+    //有个data也要共享内存，要么就把值都提取出来
+    let image = Arc::new(Mutex::new(img));
+    let cam = Arc::new(camera);
+    let sph_lst = Arc::new(sphere_list);
+    let bar= Arc::new(bar);
+
+    let mut handles = vec![];
     for j in 0..height {
         //对于每个像素，发出对应方向的光线
-        for i in 0..width {
+        let c = Arc::clone(&cam);
+        let sph = Arc::clone(&sph_lst);
+        let bar = Arc::clone(&bar);
+
+        let image = Arc::clone(&image);
+        let handle = thread::spawn(move||{
+            for i in 0..width {
             //单个像素的总和
-            let mut sum_pixel_color: [f64; 3] = [0.0; 3];
-            for _k in 0..data.sample_times/8 {
-                //为每次并行创建共享内存，使用克隆  分别为输出，相机，物体表
-                //cam和sph_lst不用上锁
-                let block_sum = Arc::new(Mutex::new([0.0;3]));
-                let mut handles = vec![];
-                //本机有12个核心，创建8个线程
-                for _ in 0..8 {
-                    //克隆共享内存
-                    let block_sum = Arc::clone(&block_sum);
-                    let cam = Arc::clone(&cam);
-                    let sph_lst = Arc::clone(&sph_lst);
-
-                    let handle = thread::spawn(move||{
-                        let tmp_pixel_color: [u8; 3] = pixel_color(i,j,(*cam).clone(),(*sph_lst).clone(),width,height,depth);
-                        //最后再去获得锁并修改
-                        let mut tmp = block_sum.lock().unwrap();
-                        for i in 0..3{
-                            (*tmp)[i]+=tmp_pixel_color[i] as f64;
-                        }
-                    });
-                    
-                    handles.push(handle);
+                let mut sum_pixel_color: [f64; 3] = [0.0;3];
+                
+                for _k in 0..sample{
+                    let tmp_pixel_color: [u8; 3] = pixel_color(i,j,&c,&sph,width,height,depth);
+                    for i in 0..3{
+                        sum_pixel_color[i]+=tmp_pixel_color[i] as f64;
+                    }
                 }
-                //等待所有进程结束
-                for i in handles{
-                    i.join().unwrap();
+                for element in &mut sum_pixel_color {
+                    *element = (*element / (sample * 255) as f64)
+                        .powf(1.0 / (gamma as f64))
+                        * 255.0;
                 }
-                //每次把8个计算的结果汇总
-                for i in 0..3{
-                    sum_pixel_color[i]+=(*block_sum.lock().unwrap())[i];
-                }
+                let pixel_color: [u8; 3] = [
+                    sum_pixel_color[0] as u8,
+                    sum_pixel_color[1] as u8,
+                    sum_pixel_color[2] as u8,
+                ];
+                let mut img = image.lock().unwrap();
+                write_color(pixel_color,&mut (*img), i, j);
+                (*bar).inc(1); 
             }
-            //采样完的结果后处理（伽马值）
-            for element in &mut sum_pixel_color {
-                *element = (*element / (data.sample_times * 255) as f64)
-                    .powf(1.0 / (data.gamma as f64))
-                    * 255.0;
-            }
-            //四舍五入
-            let pixel_color: [u8; 3] = [
-                sum_pixel_color[0] as u8,
-                sum_pixel_color[1] as u8,
-                sum_pixel_color[2] as u8,
-            ];
-            write_color(pixel_color, &mut img, i, j);
-
-            bar.inc(1);
+        });
+        handles.push(handle);
         }
+
+    for i in handles{
+        i.join().unwrap();
     }
     bar.finish();
-    img
+    let img = image.lock().unwrap();
+    (*img).clone()
 }
