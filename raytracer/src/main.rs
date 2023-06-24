@@ -30,7 +30,7 @@ fn main() {
     let is_ci: bool = is_ci();
     println!("CI: {}", is_ci);
     let path = "output/test.jpg";
-    let data = Data::new(800, 800, 60, 2, 10, 20);
+    let data = Data::new(800, 800, 60, 2, 8, 20);
     let origin = Vec3::new(13.0, 2.0, 3.0);
     let lookat = Vec3::zero();
     let camera = Camera::new(
@@ -49,7 +49,7 @@ fn main() {
         ProgressBar::new((data.height * data.width) as u64)
     };
 
-    let img: RgbImage = render(&data, &camera, bar); //data一定要引用
+    let img: RgbImage = render(&data, camera, bar); //data一定要引用
 
     // Output image to file
     println!("Ouput image as \"{}\"\n Author: {}", path, AUTHOR);

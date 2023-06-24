@@ -11,6 +11,8 @@ pub use crate::vec3::Vec3;
 use image::{ImageBuffer, Rgb, RgbImage};
 use indicatif::ProgressBar;
 use rand::{rngs::ThreadRng, Rng};
+use std::sync::{Mutex,Arc};
+use std::thread;
 
 fn ray_color(r: Ray, v: &Vec<Sphere>, depth: u32) -> [u8; 3] {
     if depth == 0 {
@@ -22,12 +24,12 @@ fn ray_color(r: Ray, v: &Vec<Sphere>, depth: u32) -> [u8; 3] {
         //有正确的交点
         let p = r.at(t);
         let n: Vec3 = p.clone() - sphere.center.clone(); //法向量
-        let normal: Vec3 = unit_vec(n.clone());
+        let normal: Vec3 = unit_vec(n);
         let mut tmp: [u8; 3];
 
         //漫反射材料
         if sphere.tp == 1 {
-            let scatter: Vec3 = normal.clone() + random_in_unit_shpere();
+            let scatter: Vec3 = normal + random_in_unit_shpere();
 
             tmp = ray_color(
                 Ray {
@@ -86,47 +88,81 @@ fn ray_color(r: Ray, v: &Vec<Sphere>, depth: u32) -> [u8; 3] {
     }
 }
 
-pub fn render(data: &Data, camera: &Camera, bar: ProgressBar) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+pub fn pixel_color(i:usize,j:usize,camera: Camera,sphere_list: Vec<Sphere>,width:usize,height:usize,depth:u32)->[u8;3]{
+    let mut random: ThreadRng = rand::thread_rng();
+    let s: f64 = ((i as f64) + random.gen::<f64>()) / ((width - 1) as f64); //行不变，竖直
+    let t: f64 =
+        (((height - 1 - j) as f64) + random.gen::<f64>()) / ((height - 1) as f64);
+    //由于要产生新的变量所以不能引用
+    let rd = random_in_unit_disk() * camera.len_radius;
+    let offset = camera.u.clone() * rd.x() + camera.v.clone() * rd.y();
+    let r = Ray::new(
+        camera.origin.clone() + offset.clone(),
+        ray_dir(
+            &camera.lower_left_corner,
+            &camera.horizontal,
+            &camera.vertical,
+            s,
+            t,
+            offset,
+        ),
+    );
+    //r.b_direction.info();
+    ray_color(r, &sphere_list, depth)
+}
+
+pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
     let width = data.width;
     let height = data.height;
+    let depth = data.depth;
     let mut img: RgbImage = ImageBuffer::new(width.try_into().unwrap(), height.try_into().unwrap());
     let sphere_list: Vec<Sphere> = init();
-    let mut random: ThreadRng = rand::thread_rng();
-
+    let cam = Arc::new(camera.clone());
+    let sph_lst = Arc::new(sphere_list.clone());
     for j in 0..height {
         //对于每个像素，发出对应方向的光线
         for i in 0..width {
+            //单个像素的总和
             let mut sum_pixel_color: [f64; 3] = [0.0; 3];
-            for _k in 0..data.sample_times {
-                let s: f64 = ((i as f64) + random.gen::<f64>()) / ((width - 1) as f64); //行不变，竖直
-                let t: f64 =
-                    (((height - 1 - j) as f64) + random.gen::<f64>()) / ((height - 1) as f64);
-                //由于要产生新的变量所以不能引用
-                let rd = random_in_unit_disk() * camera.len_radius;
-                let offset = camera.u.clone() * rd.x() + camera.v.clone() * rd.y();
-                let r = Ray::new(
-                    camera.origin.clone() + offset.clone(),
-                    ray_dir(
-                        &camera.lower_left_corner,
-                        &camera.horizontal,
-                        &camera.vertical,
-                        s,
-                        t,
-                        offset,
-                    ),
-                );
-                //r.b_direction.info();
-                let tmp_pixel_color: [u8; 3] = ray_color(r, &sphere_list, data.depth);
-                for l in 0..3 {
-                    sum_pixel_color[l] += tmp_pixel_color[l] as f64;
+            for _k in 0..data.sample_times/8 {
+                //为每次并行创建共享内存，使用克隆  分别为输出，相机，物体表
+                //cam和sph_lst不用上锁
+                let block_sum = Arc::new(Mutex::new([0.0;3]));
+                let mut handles = vec![];
+                //本机有12个核心，创建8个线程
+                for _ in 0..8 {
+                    //克隆共享内存
+                    let block_sum = Arc::clone(&block_sum);
+                    let cam = Arc::clone(&cam);
+                    let sph_lst = Arc::clone(&sph_lst);
+
+                    let handle = thread::spawn(move||{
+                        let tmp_pixel_color: [u8; 3] = pixel_color(i,j,(*cam).clone(),(*sph_lst).clone(),width,height,depth);
+                        //最后再去获得锁并修改
+                        let mut tmp = block_sum.lock().unwrap();
+                        for i in 0..3{
+                            (*tmp)[i]+=tmp_pixel_color[i] as f64;
+                        }
+                    });
+                    
+                    handles.push(handle);
+                }
+                //等待所有进程结束
+                for i in handles{
+                    i.join().unwrap();
+                }
+                //每次把8个计算的结果汇总
+                for i in 0..3{
+                    sum_pixel_color[i]+=(*block_sum.lock().unwrap())[i];
                 }
             }
-
+            //采样完的结果后处理（伽马值）
             for element in &mut sum_pixel_color {
                 *element = (*element / (data.sample_times * 255) as f64)
                     .powf(1.0 / (data.gamma as f64))
                     * 255.0;
             }
+            //四舍五入
             let pixel_color: [u8; 3] = [
                 sum_pixel_color[0] as u8,
                 sum_pixel_color[1] as u8,

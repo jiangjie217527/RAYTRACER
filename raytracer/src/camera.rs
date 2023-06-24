@@ -1,6 +1,6 @@
 pub use crate::util::unit_vec;
 pub use crate::vec3::Vec3;
-
+#[derive(Clone, Debug, PartialEq)]
 pub struct Camera {
     pub viewport_height: f64,
     pub viewport_width: f64,
@@ -41,7 +41,7 @@ impl Camera {
             w: w.clone(),
             viewport_height: viewport_height * h,
             viewport_width: viewport_height * ratio * h,
-            origin: origin.clone(),
+            origin,
             lookat,
             vup: Vec3::new(0.0, 1.0, 0.0),
             fov,

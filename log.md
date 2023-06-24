@@ -151,3 +151,5 @@ Schlick's approximation for reflectance
 # 计划
 
 6.24完成多线程和第一本书的debug（对每个可疑函数单独验证功能），就算第一本书完成了然后正式进入第二本书
+
+还可以看一下git和github相关的内容
