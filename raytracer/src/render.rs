@@ -40,7 +40,7 @@ fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32) -> [u8; 3] {
                 bvh_tree,
                 depth - 1,
             );
-            for l in 0..3 {
+            for (l, _) in tmp.clone().iter_mut().enumerate() {
                 tmp[l] = (tmp[l] as f64 * ((sphere.color[l] as f64) / 255.0)) as u8;
             }
         }
@@ -58,7 +58,7 @@ fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32) -> [u8; 3] {
                 bvh_tree,
                 depth - 1,
             );
-            for l in 0..3 {
+            for (l, _) in tmp.clone().iter_mut().enumerate() {
                 tmp[l] = (tmp[l] as f64 * ((sphere.color[l] as f64) / 255.0)) as u8;
             }
         } else {
