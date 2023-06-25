@@ -31,7 +31,7 @@ fn main() {
     let is_ci: bool = is_ci();
     println!("CI: {}", is_ci);
     let path = "output/test.jpg";
-    let data = Data::new(800, 800, 60, 2, 10, 20);
+    let data = Data::new(1000, 1500, 60, 2, 500, 40);
     let origin = Vec3::new(13.0, 2.0, 3.0);
     let lookat = Vec3::new(0.0, 0.0, 0.0);
     let camera = Camera::new(

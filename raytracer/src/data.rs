@@ -43,7 +43,7 @@ pub fn init() -> Vec<Sphere> {
         Sphere {
             //middle
             center: (Vec3::new(0.0, 1.0, 0.0)),
-            destinity: (Vec3::new(0.0, 1.5, 0.0)),
+            destinity: (Vec3::new(0.0, 1.0, 0.0)),
             r: (1.0),
             tp: (3),
             color: ([128, 128, 128]),
@@ -67,7 +67,7 @@ pub fn init() -> Vec<Sphere> {
         Sphere {
             //diff
             center: (Vec3::new(-4.0, 1.0, 0.0)),
-            destinity: (Vec3::new(-4.0, 1.5, 0.0)),
+            destinity: (Vec3::new(-4.0, 1.0, 0.0)),
             r: (1.0),
             tp: (1),
             color: ([102, 51, 25]),
@@ -79,7 +79,7 @@ pub fn init() -> Vec<Sphere> {
         Sphere {
             //metal
             center: (Vec3::new(4.0, 1.0, 0.0)),
-            destinity: (Vec3::new(4.0, 1.5, 0.0)),
+            destinity: (Vec3::new(4.0, 1.0, 0.0)),
             r: (1.0),
             tp: (2),
             color: ([178, 153, 128]),
@@ -108,7 +108,7 @@ pub fn init() -> Vec<Sphere> {
                 v.push(Sphere {
                     tp: (1),
                     center: (center.clone()),
-                    destinity: (center + Vec3::new(0.0, 0.1, 0.0)),
+                    destinity: (center + Vec3::new(0.0, 0.0, 0.0)),
                     r: (0.2),
                     color: (color),
                     fuzz: (0.2),
@@ -125,7 +125,7 @@ pub fn init() -> Vec<Sphere> {
                 v.push(Sphere {
                     tp: (2),
                     center: (center.clone()),
-                    destinity: (center + Vec3::new(0.0, 0.1, 0.0)),
+                    destinity: (center + Vec3::new(0.0, 0.0, 0.0)),
                     r: (0.2),
                     color: (color),
                     fuzz: (random.gen_range(0.0..0.5)),
@@ -137,7 +137,7 @@ pub fn init() -> Vec<Sphere> {
                 v.push(Sphere {
                     tp: (3),
                     center: (center.clone()),
-                    destinity: (center + Vec3::new(0.0, 0.1, 0.0)),
+                    destinity: (center + Vec3::new(0.0, 0.0, 0.0)),
                     r: (0.2),
                     color: ([0; 3]),
                     fuzz: (0.2),
