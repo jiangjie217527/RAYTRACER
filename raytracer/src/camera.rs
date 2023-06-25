@@ -19,6 +19,9 @@ pub struct Camera {
 
     pub len_radius: f64,
     pub focus_dist: f64,
+
+    pub time1: f64,
+    pub time2: f64,
 }
 
 impl Camera {
@@ -45,6 +48,8 @@ impl Camera {
             lookat,
             vup: Vec3::new(0.0, 1.0, 0.0),
             fov,
+            time1: 0.0,
+            time2: 1.0,
             len_radius: aperture / 2.0,
             focus_dist,
             horizontal: u.clone() * viewport_height * ratio * h * focus_dist,

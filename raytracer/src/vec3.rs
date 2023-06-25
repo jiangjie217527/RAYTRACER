@@ -1,5 +1,5 @@
+use crate::util::{fmax, fmin};
 use std::ops::{Add, AddAssign, Div, Mul, Sub};
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct Vec3 {
     x: f64,
@@ -46,10 +46,32 @@ impl Vec3 {
     pub fn z(&self) -> f64 {
         self.z
     }
+    pub fn lp(&self, index: u8) -> f64 {
+        if index == 0 {
+            self.x
+        } else if index == 1 {
+            self.y
+        } else {
+            self.z
+        }
+    }
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
     }
-
+    pub fn merge_min(v1: &Vec3, v2: &Vec3) -> Self {
+        Self {
+            x: (fmin(v1.x, v2.x)),
+            y: fmin(v1.y, v2.y),
+            z: fmin(v1.z, v2.z),
+        }
+    }
+    pub fn merge_max(v1: &Vec3, v2: &Vec3) -> Self {
+        Self {
+            x: (fmax(v1.x, v2.x)),
+            y: fmax(v1.y, v2.y),
+            z: fmax(v1.z, v2.z),
+        }
+    }
     // pub fn ones() -> Self {
     //     Self::new(1.0, 1.0, 1.0)
     // }
@@ -59,17 +81,12 @@ impl Vec3 {
     }
 
     pub fn near_zero(&self) -> bool {
-        if self.x() < 0.00000001
+        self.x() < 0.00000001
             && self.x() > -0.00000001
             && self.y() < 0.00000001
             && self.y() > -0.00000001
             && self.z() < 0.00000001
             && self.z() > -0.00000001
-        {
-            true
-        } else {
-            false
-        }
     }
 
     pub fn squared_length(&self) -> f64 {

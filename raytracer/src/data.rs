@@ -43,38 +43,50 @@ pub fn init() -> Vec<Sphere> {
         Sphere {
             //middle
             center: (Vec3::new(0.0, 1.0, 0.0)),
+            destinity: (Vec3::new(0.0, 1.5, 0.0)),
             r: (1.0),
             tp: (3),
             color: ([128, 128, 128]),
             fuzz: (0.0),
             etia: (1.5),
+            time1: (0.0),
+            time2: (1.0),
         },
         Sphere {
             //ground
             center: (Vec3::new(0.0, -1000.0, 0.0)),
+            destinity: (Vec3::new(0.0, -1000.0, 0.0)),
             r: (1000.0),
             tp: (1),
             color: ([128, 128, 128]),
             fuzz: (0.0),
             etia: (0.0),
+            time1: (0.0),
+            time2: (1.0),
         },
         Sphere {
             //diff
             center: (Vec3::new(-4.0, 1.0, 0.0)),
+            destinity: (Vec3::new(-4.0, 1.5, 0.0)),
             r: (1.0),
             tp: (1),
             color: ([102, 51, 25]),
             fuzz: (0.3),
             etia: (1.5),
+            time1: (0.0),
+            time2: (1.0),
         },
         Sphere {
             //metal
             center: (Vec3::new(4.0, 1.0, 0.0)),
+            destinity: (Vec3::new(4.0, 1.5, 0.0)),
             r: (1.0),
             tp: (2),
             color: ([178, 153, 128]),
             fuzz: (0.0),
             etia: (1.5),
+            time1: (0.0),
+            time2: (1.0),
         },
     ];
     let mut random: ThreadRng = rand::thread_rng();
@@ -95,11 +107,14 @@ pub fn init() -> Vec<Sphere> {
                 );
                 v.push(Sphere {
                     tp: (1),
-                    center: (center),
+                    center: (center.clone()),
+                    destinity: (center + Vec3::new(0.0, 0.1, 0.0)),
                     r: (0.2),
                     color: (color),
                     fuzz: (0.2),
                     etia: (0.0),
+                    time1: (0.0),
+                    time2: (1.0),
                 });
             } else if choose < 0.95 {
                 let color = color(
@@ -109,20 +124,26 @@ pub fn init() -> Vec<Sphere> {
                 );
                 v.push(Sphere {
                     tp: (2),
-                    center: (center),
+                    center: (center.clone()),
+                    destinity: (center + Vec3::new(0.0, 0.1, 0.0)),
                     r: (0.2),
                     color: (color),
                     fuzz: (random.gen_range(0.0..0.5)),
                     etia: (0.0),
+                    time1: (0.0),
+                    time2: (1.0),
                 });
             } else {
                 v.push(Sphere {
                     tp: (3),
-                    center: (center),
+                    center: (center.clone()),
+                    destinity: (center + Vec3::new(0.0, 0.1, 0.0)),
                     r: (0.2),
                     color: ([0; 3]),
                     fuzz: (0.2),
                     etia: (1.5),
+                    time1: (0.0),
+                    time2: (1.0),
                 })
             }
         }

@@ -161,3 +161,9 @@ Schlick's approximation for reflectance
 修改：将较远的根也加入考虑（貌似没用但是先加）
 
 金属材料要考虑如果从内部射会怎么样，暂时没有影响
+
+# book 1 finish start book 2
+
+Any object is in just one bounding volume, but bounding volumes can overlap
+
+6.25完成了AABB，即BVH模块加速了运算

@@ -1,3 +1,4 @@
+pub use crate::aabb::{Aabb, BvhNode};
 pub use crate::camera::Camera;
 pub use crate::color::write_color;
 pub use crate::data::{init, Data};
@@ -14,11 +15,11 @@ use rand::{rngs::ThreadRng, Rng};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-fn ray_color(r: Ray, v: &Vec<Sphere>, depth: u32) -> [u8; 3] {
+fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32) -> [u8; 3] {
     if depth == 0 {
         return [0; 3];
     }
-    let (t, sphere) = hittable(r.clone(), v); //处理最近的光线交点
+    let (t, sphere) = hittable(r.clone(), bvh_tree); //处理最近的光线交点
 
     if t != f64::INFINITY {
         //有正确的交点
@@ -34,8 +35,9 @@ fn ray_color(r: Ray, v: &Vec<Sphere>, depth: u32) -> [u8; 3] {
                 Ray {
                     a_origin: (p),
                     b_direction: (scatter),
+                    time: r.time,
                 },
-                v,
+                bvh_tree,
                 depth - 1,
             );
             for l in 0..3 {
@@ -51,8 +53,9 @@ fn ray_color(r: Ray, v: &Vec<Sphere>, depth: u32) -> [u8; 3] {
                 Ray {
                     a_origin: (p),
                     b_direction: (reflect),
+                    time: r.time,
                 },
-                v,
+                bvh_tree,
                 depth - 1,
             );
             for l in 0..3 {
@@ -75,8 +78,9 @@ fn ray_color(r: Ray, v: &Vec<Sphere>, depth: u32) -> [u8; 3] {
                 Ray {
                     a_origin: (p),
                     b_direction: (refract),
+                    time: r.time,
                 },
-                v,
+                bvh_tree,
                 depth - 1,
             );
         }
@@ -97,7 +101,7 @@ pub fn pixel_color(
     i: usize,
     j: usize,
     camera: &Camera,
-    sphere_list: &Vec<Sphere>,
+    bvh_tree: &BvhNode,
     width: usize,
     height: usize,
     depth: u32,
@@ -118,9 +122,10 @@ pub fn pixel_color(
             t,
             offset,
         ),
+        random.gen_range(camera.time1..camera.time2),
     );
     //r.b_direction.info();
-    ray_color(r, &sphere_list, depth)
+    ray_color(r, bvh_tree, depth)
 }
 
 pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
@@ -132,18 +137,23 @@ pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<
 
     let img: RgbImage = ImageBuffer::new(width.try_into().unwrap(), height.try_into().unwrap());
     let sphere_list: Vec<Sphere> = init();
-    //有个data也要共享内存，要么就把值都提取出来
+    let mut bvh_tree = BvhNode::new(&Sphere::empty_sphere());
+    bvh_tree.build(sphere_list.clone(), 0, sphere_list.len());
+    //bvh_tree.info();
+    //有个data也要共享内存，要么就把值都提取出来：上互斥锁
     let image = Arc::new(Mutex::new(img));
     let cam = Arc::new(camera);
-    let sph_lst = Arc::new(sphere_list);
+    //let sph_lst = Arc::new(sphere_list);
     let bar = Arc::new(bar);
+    let bvh_tree = Arc::new(bvh_tree);
 
     let mut handles = vec![];
     for j in 0..height {
         //以下开始一个线程  对共享内存的复制
         let c = Arc::clone(&cam);
-        let sph = Arc::clone(&sph_lst);
+        //let sph = Arc::clone(&sph_lst);
         let bar = Arc::clone(&bar);
+        let bvh_node = Arc::clone(&bvh_tree);
         //共享可写内存：上互斥锁
         let image = Arc::clone(&image);
         //开始线程
@@ -153,7 +163,7 @@ pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<
 
                 for _k in 0..sample {
                     let tmp_pixel_color: [u8; 3] =
-                        pixel_color(i, j, &c, &sph, width, height, depth);
+                        pixel_color(i, j, &c, &bvh_node, width, height, depth);
                     for i in 0..3 {
                         sum_pixel_color[i] += tmp_pixel_color[i] as f64;
                     }
@@ -168,7 +178,7 @@ pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<
                     sum_pixel_color[2] as u8,
                 ];
                 let mut img = image.lock().unwrap();
-                write_color(pixel_color, &mut (*img), i, j);
+                write_color(pixel_color, &mut img, i, j);
                 (*bar).inc(1);
             }
         });
