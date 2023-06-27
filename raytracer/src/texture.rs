@@ -33,3 +33,12 @@ pub fn checher_color_value(n: Vec3) -> [u8; 3] {
         color(0.2, 0.3, 0.1)
     }
 }
+
+// pub struct Perlin{
+//     color_value:Vec<[u8;3]>,
+// }
+// impl Perlin{
+//     pub fn init(){
+
+//     }
+// }

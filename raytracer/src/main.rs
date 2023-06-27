@@ -18,7 +18,7 @@ use data::Data; //数据层
 use render::render; //渲染层
 use vec3::Vec3;
 
-use std::process::Command;
+//use std::process::Command;
 
 const AUTHOR: &str = "停云别叫恩公,叫___";
 fn is_ci() -> bool {
@@ -70,10 +70,10 @@ fn main() {
         Err(_) => println!("Outputting image fails."),
     }
     //play the sound
-    if is_ci {
-    Command::new("cmd")
-        .args(["/C", ".\\sound.exe"])
-        .output()
-        .expect("failed to execute process");
-    }
+    // if is_ci {
+    // Command::new("cmd")
+    //     .args(["/C", ".\\sound.exe"])
+    //     .output()
+    //     .expect("failed to execute process");
+    // }
 }
