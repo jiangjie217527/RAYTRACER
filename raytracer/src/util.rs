@@ -1,4 +1,3 @@
-pub use crate::aabb::BvhNode;
 pub use crate::ray::Ray;
 pub use crate::sphere::Sphere;
 pub use crate::vec3::Vec3;
@@ -26,21 +25,6 @@ pub fn fabs(num: f64) -> f64 {
         -num
     } else {
         num
-    }
-}
-pub fn fmin(v1: f64, v2: f64) -> f64 {
-    if v1 > v2 {
-        v2
-    } else {
-        v1
-    }
-}
-
-pub fn fmax(v1: f64, v2: f64) -> f64 {
-    if v1 > v2 {
-        v1
-    } else {
-        v2
     }
 }
 //折射模块，还有点问题
@@ -118,27 +102,25 @@ pub fn color(x: f64, y: f64, z: f64) -> [u8; 3] {
 }
 
 //处理最近的光线交点
-pub fn hittable(r: Ray, bvh_tree: &BvhNode) -> (f64, Sphere) {
-    //let mut t = f64::INFINITY;
+pub fn hittable(r: Ray, v: &Vec<Sphere>) -> (f64, Sphere) {
+    let mut t = f64::INFINITY;
     let t_min = 0.001;
-    //let mut sphere = &Sphere::empty_sphere();
-    let ( t, sphere) = bvh_tree.hit(&r, t_min, f64::INFINITY);
-        (t, sphere)
-    
+    let mut sphere = &Sphere::empty_sphere();
+    for i in v {
+        let (tmp, delta) = i.hit_sphere(r.clone());
+        if tmp < t_min || tmp > t {
+            let tmp = tmp + delta;
+            //可能影响折射
+            if tmp < t_min || tmp > t {
+                continue;
+            } else {
+                t = tmp;
+                sphere = i;
+            }
+        } else {
+            t = tmp;
+            sphere = i;
+        }
+    }
+    (t, sphere.clone())
 }
-// for i in v {
-//     let (tmp, delta) = i.hit_sphere(r.clone());
-//     if tmp < t_min || tmp > t {
-//         let tmp = tmp + delta;
-//         //可能影响折射
-//         if tmp < t_min || tmp > t {
-//             continue;
-//         } else {
-//             t = tmp;
-//             sphere = i;
-//         }
-//     } else {
-//         t = tmp;
-//         sphere = i;
-//     }
-// }

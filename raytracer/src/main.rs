@@ -1,4 +1,3 @@
-mod aabb;
 mod camera;
 mod color;
 mod data;
@@ -7,7 +6,6 @@ mod render;
 mod sphere;
 mod util;
 mod vec3;
-mod texture;
 
 use image::RgbImage; //接收render传回来的图片，在main中文件输出
 use indicatif::ProgressBar; //main中产生进度条并传给render
@@ -32,24 +30,19 @@ fn main() {
     let is_ci: bool = is_ci();
     println!("CI: {}", is_ci);
     let path = "output/test.jpg";
-    let data = Data::new(800, 800, 60, 2, 8, 40);
+    let data = Data::new(1000, 1500, 60, 2, 500, 40);
     let origin = Vec3::new(13.0, 2.0, 3.0);
     let lookat = Vec3::new(0.0, 0.0, 0.0);
     let camera = Camera::new(
         data.width as f64 / data.height as f64,
         2.0,
-        origin.clone(),
-        lookat.clone(),
+        origin,
+        lookat,
         std::f64::consts::PI / 9.0,
         0.1,
         //(origin-lookat).length(),
         10.0,
     );
-    // let camera1 = Camera::new(data.width as f64 / data.height as f64,
-    //      2.0,
-    //       origin, lookat,
-    //       std::f64::consts::PI / 9.0, 
-    //        0.0, 10.0);
     let bar: ProgressBar = if is_ci {
         ProgressBar::hidden()
     } else {
