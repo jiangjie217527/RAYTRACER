@@ -122,12 +122,9 @@ pub fn hittable(r: Ray, bvh_tree: &BvhNode) -> (f64, Sphere) {
     //let mut t = f64::INFINITY;
     let t_min = 0.001;
     //let mut sphere = &Sphere::empty_sphere();
-    let (whetherhit, t, sphere) = bvh_tree.hit(&r, t_min, f64::INFINITY);
-    if !whetherhit {
-        (f64::INFINITY, Sphere::empty_sphere())
-    } else {
+    let ( t, sphere) = bvh_tree.hit(&r, t_min, f64::INFINITY);
         (t, sphere)
-    }
+    
 }
 // for i in v {
 //     let (tmp, delta) = i.hit_sphere(r.clone());

@@ -51,6 +51,7 @@ pub fn init() -> Vec<Sphere> {
             etia: (1.5),
             time1: (0.0),
             time2: (1.0),
+            texture_type:(0),
         },
         Sphere {
             //ground
@@ -62,6 +63,7 @@ pub fn init() -> Vec<Sphere> {
             fuzz: (0.0),
             etia: (0.0),
             time1: (0.0),
+            texture_type:(1),
             time2: (1.0),
         },
         Sphere {
@@ -74,6 +76,7 @@ pub fn init() -> Vec<Sphere> {
             fuzz: (0.3),
             etia: (1.5),
             time1: (0.0),
+            texture_type:(0),
             time2: (1.0),
         },
         Sphere {
@@ -86,6 +89,7 @@ pub fn init() -> Vec<Sphere> {
             fuzz: (0.0),
             etia: (1.5),
             time1: (0.0),
+            texture_type:(0),
             time2: (1.0),
         },
     ];
@@ -114,7 +118,8 @@ pub fn init() -> Vec<Sphere> {
                     fuzz: (0.2),
                     etia: (0.0),
                     time1: (0.0),
-                    time2: (1.0),
+            texture_type:(0),
+            time2: (1.0),
                 });
             } else if choose < 0.95 {
                 let color = color(
@@ -130,7 +135,8 @@ pub fn init() -> Vec<Sphere> {
                     color: (color),
                     fuzz: (random.gen_range(0.0..0.5)),
                     etia: (0.0),
-                    time1: (0.0),
+            texture_type:(0),
+            time1: (0.0),
                     time2: (1.0),
                 });
             } else {
@@ -141,7 +147,8 @@ pub fn init() -> Vec<Sphere> {
                     r: (0.2),
                     color: ([0; 3]),
                     fuzz: (0.2),
-                    etia: (1.5),
+            texture_type:(0),
+            etia: (1.5),
                     time1: (0.0),
                     time2: (1.0),
                 })
@@ -150,3 +157,47 @@ pub fn init() -> Vec<Sphere> {
     }
     v
 }
+/*
+pub fn init2()->Vec<Sphere>{
+    vec![        Sphere {
+        //ground
+        center: (Vec3::new(0.0, -1000.0, 0.0)),
+        destinity: (Vec3::new(0.0, -1000.0, 0.0)),
+        r: (1000.0),
+        tp: (1),
+        color: ([128, 128, 128]),
+        fuzz: (0.0),
+        etia: (0.0),
+        time1: (0.0),
+        texture_type:(1),
+        time2: (1.0),
+    }]
+}
+
+pub fn init3()->Vec<Sphere>{
+    vec![        Sphere {
+        center: (Vec3::new(0.0, -10.0, 0.0)),
+        destinity: (Vec3::new(0.0, -10.0, 0.0)),
+        r: (10.0),
+        tp: (1),
+        color: ([128, 128, 128]),
+        fuzz: (0.0),
+        etia: (0.0),
+        time1: (0.0),
+        texture_type:(1),
+        time2: (1.0),
+    },Sphere {
+        //ground
+        center: (Vec3::new(0.0, 10.0, 0.0)),
+        destinity: (Vec3::new(0.0, 10.0, 0.0)),
+        r: (10.0),
+        tp: (1),
+        color: ([128, 128, 128]),
+        fuzz: (0.0),
+        etia: (0.0),
+        time1: (0.0),
+        texture_type:(1),
+        time2: (1.0),}
+        ]
+}
+*/

@@ -48,18 +48,11 @@ impl Aabb {
         }
     }
     //using surround box to get a big box of a list of sphere
-    pub fn bound_box(sphere_list: &Vec<Sphere>) -> (Self, bool) {
-        if sphere_list.is_empty() {
-            return (Aabb::new_empty(), false);
-        }
-
+    pub fn bound_box(sphere_list: &Vec<Sphere>) -> Self {
         let mut first_box = true;
         let mut output_box = Aabb::new_empty();
         for i in sphere_list {
-            let (tmp_box, allow) = i.bound_box();
-            if !allow {
-                return (Aabb::new_empty(), false);
-            }
+            let tmp_box = i.bound_box();
             if !first_box {
                 output_box = Aabb::surround_box(output_box, tmp_box);
             } else {
@@ -67,7 +60,7 @@ impl Aabb {
                 first_box = false;
             }
         }
-        (output_box, true)
+        output_box
     }
     //compare the box return a Ordering
     pub fn box_compare(a: Aabb, b: Aabb, axis: u8) -> Ordering {
@@ -109,38 +102,25 @@ impl BvhNode {
     //         _ => {}
     //     }
     // }
-    pub fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> (bool, f64, Sphere) {
+    pub fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> ( f64, Sphere) {
         //if the big box didn't hit the ray then retrn false
 
         if !self.bd_box.hit(r, t_min, t_max) {
-            return (false, f64::INFINITY, Sphere::empty_sphere());
+            return (f64::INFINITY, Sphere::empty_sphere());
         }
         //if yes then check out which box and return the hit point t on ray
-        let mut hitleft = false;
-        let mut hitright = false;
         let mut t_left = f64::INFINITY;
         let mut t_right = f64::INFINITY;
         let mut sphere_left = Sphere::empty_sphere();
         let mut sphere_right = Sphere::empty_sphere();
-        // match self.left {
-        //     Some(ref x) => {
-        //         (hitleft, t_left, sphere_left) = x.hit(r, t_min, t_max);
-        //     }
-        //     _ => {}
-        // }
-        // match self.right {
-        //     Some(ref x) => {
-        //         (hitright, t_right, sphere_right) = x.hit(r, t_min, t_left);
-        //     }
-        //     _ => {}
-        // }
+        //因为有可能没有子节点，导致没有赋值，所以必须赋初值，使用变量
         if let Some(ref x) = self.left {
-            (hitleft, t_left, sphere_left) = x.hit(r, t_min, t_max);
+            ( t_left, sphere_left) = x.hit(r, t_min, t_max);
         }
         if let Some(ref x) = self.right {
-            (hitright, t_right, sphere_right) = x.hit(r, t_min, t_left);
+            ( t_right, sphere_right) = x.hit(r, t_min, t_left);
         }
-        if !hitleft && !hitright && self.sphere.r != 0.0 {
+        if t_left == f64::INFINITY && t_right == f64::INFINITY && self.sphere.r != 0.0 {
             let mut tmp;
             let delta;
             (tmp, delta) = self.sphere.hit_sphere(r.clone());
@@ -152,21 +132,20 @@ impl BvhNode {
                 }
             }
             if tmp < t_max && tmp > t_min {
-                (true, tmp, self.sphere.clone())
+                ( tmp, self.sphere.clone())
             } else {
-                (false, tmp, Sphere::empty_sphere())
+                ( f64::INFINITY, Sphere::empty_sphere())
             }
         } else if t_left < t_right {
-            (hitleft || hitright, t_left, sphere_left)
+            ( t_left, sphere_left)
         } else {
-            (hitleft || hitright, t_right, sphere_right)
+            ( t_right, sphere_right)
         }
     }
 
     pub fn new(sphere: &Sphere) -> Self {
-        let (bd_box, _) = sphere.bound_box();
         Self {
-            bd_box: (bd_box),
+            bd_box: (sphere.bound_box()),
             left: (None),
             right: (None),
             sphere: sphere.clone(),
@@ -176,18 +155,17 @@ impl BvhNode {
         //println!("start:{},end:{}", start, end);
         let axis = rand::thread_rng().gen_range(0..3);
         let object_span = end - start;
-        if object_span == 0 {
+        if object_span == 0 {  //可能刚开始的时候sphere_list就为空，这里加了这个就可以肯定bound_box一定正常
+            //在render.rs里面已经初始化了，直接返回
             return;
         }
 
-        (self.bd_box, _) = Aabb::bound_box(&sphere_list);
+        self.bd_box = Aabb::bound_box(&sphere_list);
 
         if object_span == 1 {
             self.sphere = sphere_list[0].clone();
         } else if object_span == 2 {
-            let (box_1, _) = sphere_list[0].bound_box();
-            let (box_2, _) = sphere_list[1].bound_box();
-            if Aabb::box_compare(box_1, box_2, axis) == Ordering::Less {
+            if Aabb::box_compare(sphere_list[0].bound_box(), sphere_list[1].bound_box(), axis) == Ordering::Less {
                 self.left = Some(Box::new(BvhNode::new(&sphere_list[0])));
                 self.right = Some(Box::new(BvhNode::new(&sphere_list[1])));
             } else {
@@ -196,9 +174,7 @@ impl BvhNode {
             }
         } else {
             sphere_list.sort_by(|a, b| {
-                let (box_a, _) = a.bound_box();
-                let (box_b, _) = b.bound_box();
-                Aabb::box_compare(box_a, box_b, axis)
+                Aabb::box_compare(a.bound_box(), b.bound_box(), axis)
             });
             let mid = start + object_span / 2;
             let mut left_list = vec![];
@@ -216,3 +192,16 @@ impl BvhNode {
         }
     }
 }
+
+        // match self.left {
+        //     Some(ref x) => {
+        //         (hitleft, t_left, sphere_left) = x.hit(r, t_min, t_max);
+        //     }
+        //     _ => {}
+        // }
+        // match self.right {
+        //     Some(ref x) => {
+        //         (hitright, t_right, sphere_right) = x.hit(r, t_min, t_left);
+        //     }
+        //     _ => {}
+        // }

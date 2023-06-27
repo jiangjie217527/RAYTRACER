@@ -167,3 +167,7 @@ Schlick's approximation for reflectance
 Any object is in just one bounding volume, but bounding volumes can overlap
 
 6.25完成了AABB，即BVH模块加速了运算
+
+# 调整2
+
+6.27 对之前写的代码review

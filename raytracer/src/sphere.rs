@@ -14,6 +14,8 @@ pub struct Sphere {
     pub color: [u8; 3], //颜色
     pub fuzz: f64,      //金属磨砂效果
     pub etia: f64,      //折射率
+
+    pub texture_type:u8,
 }
 
 impl Sphere {
@@ -68,6 +70,7 @@ impl Sphere {
             fuzz: 0.0,
             etia: 0.0,
             destinity: Vec3::zero(),
+            texture_type:0,
         }
     }
 
@@ -76,8 +79,8 @@ impl Sphere {
         ray_direction * normal * self.r / fabs(self.r) < 0.0
     }
     //产生bound_box
-    pub fn bound_box(&self) -> (Aabb, bool) {
-        (
+    pub fn bound_box(&self) -> Aabb {
+
             Aabb::surround_box(
                 Aabb::new(
                     self.center(self.time1) - Vec3::new(self.r, self.r, self.r),
@@ -87,8 +90,7 @@ impl Sphere {
                     self.center(self.time2) - Vec3::new(self.r, self.r, self.r),
                     self.center(self.time2) + Vec3::new(self.r, self.r, self.r),
                 ),
-            ),
-            true,
-        )
+            )
+
     }
 }
