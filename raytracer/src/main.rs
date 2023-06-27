@@ -1,9 +1,11 @@
+mod aabb;
 mod camera;
 mod color;
 mod data;
 mod ray;
 mod render;
 mod sphere;
+mod texture;
 mod util;
 mod vec3;
 
@@ -30,7 +32,7 @@ fn main() {
     let is_ci: bool = is_ci();
     println!("CI: {}", is_ci);
     let path = "output/test.jpg";
-    let data = Data::new(1000, 1500, 60, 2, 500, 40);
+    let data = Data::new(800, 800, 60, 2, 100, 40);
     let origin = Vec3::new(13.0, 2.0, 3.0);
     let lookat = Vec3::new(0.0, 0.0, 0.0);
     let camera = Camera::new(
@@ -43,6 +45,11 @@ fn main() {
         //(origin-lookat).length(),
         10.0,
     );
+    // let camera1 = Camera::new(data.width as f64 / data.height as f64,
+    //      2.0,
+    //       origin, lookat,
+    //       std::f64::consts::PI / 9.0,
+    //        0.0, 10.0);
     let bar: ProgressBar = if is_ci {
         ProgressBar::hidden()
     } else {
