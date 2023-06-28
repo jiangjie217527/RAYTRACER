@@ -1,10 +1,8 @@
-pub use crate::aabb::{Aabb, BvhNode};
 pub use crate::camera::Camera;
 pub use crate::color::write_color;
 pub use crate::data::{init, Data};
 pub use crate::ray::Ray;
 pub use crate::sphere::Sphere;
-pub use crate::texture::checher_color_value;
 pub use crate::util::{
     color, hittable, random_in_unit_disk, random_in_unit_shpere, ray_dir, reflect, refract,
     unit_vec,
@@ -16,11 +14,11 @@ use rand::{rngs::ThreadRng, Rng};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32) -> [u8; 3] {
+fn ray_color(r: Ray, v: &Vec<Sphere>, depth: u32) -> [u8; 3] {
     if depth == 0 {
         return [0; 3];
     }
-    let (t, sphere) = hittable(r.clone(), bvh_tree); //处理最近的光线交点
+    let (t, sphere) = hittable(r.clone(), v); //处理最近的光线交点
 
     if t != f64::INFINITY {
         //有正确的交点
@@ -30,32 +28,36 @@ fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32) -> [u8; 3] {
 
         //漫反射材料
         if sphere.tp == 1 {
-            let scatter: Vec3 = normal.clone() + random_in_unit_shpere();
+            let scatter: Vec3 = normal + random_in_unit_shpere();
 
             tmp = ray_color(
                 Ray {
                     a_origin: (p),
                     b_direction: (scatter),
-                    time: r.time,
                 },
-                bvh_tree,
+                v,
                 depth - 1,
             );
+            for (l, _) in tmp.clone().iter_mut().enumerate() {
+                tmp[l] = (tmp[l] as f64 * ((sphere.color[l] as f64) / 255.0)) as u8;
+            }
         }
         //金属材料
         else if sphere.tp == 2 {
-            let reflect: Vec3 = reflect(unit_vec(r.b_direction), normal.clone())
-                + random_in_unit_shpere() * sphere.fuzz;
+            let reflect: Vec3 =
+                reflect(unit_vec(r.b_direction), normal) + random_in_unit_shpere() * sphere.fuzz;
 
             tmp = ray_color(
                 Ray {
                     a_origin: (p),
                     b_direction: (reflect),
-                    time: r.time,
                 },
-                bvh_tree,
+                v,
                 depth - 1,
             );
+            for (l, _) in tmp.clone().iter_mut().enumerate() {
+                tmp[l] = (tmp[l] as f64 * ((sphere.color[l] as f64) / 255.0)) as u8;
+            }
         } else {
             //折射
             let ratio;
@@ -67,30 +69,16 @@ fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32) -> [u8; 3] {
                 ratio = sphere.etia;
                 dir = -1.0;
             }
-            let refract = refract(unit_vec(r.b_direction), normal.clone() * dir, ratio);
+            let refract = refract(unit_vec(r.b_direction), normal * dir, ratio);
 
             tmp = ray_color(
                 Ray {
                     a_origin: (p),
                     b_direction: (refract),
-                    time: r.time,
                 },
-                bvh_tree,
+                v,
                 depth - 1,
             );
-        }
-        if sphere.tp != 3 {
-            if sphere.texture_type == 0 {
-                for (l, _) in tmp.clone().iter_mut().enumerate() {
-                    tmp[l] = (tmp[l] as f64 * ((sphere.color[l] as f64) / 255.0)) as u8;
-                }
-            } else {
-                //let (u,v) = get_uv(normal.clone());
-                let sphere_texture = checher_color_value(normal);
-                for (l, _) in tmp.clone().iter_mut().enumerate() {
-                    tmp[l] = (tmp[l] as f64 * ((sphere_texture[l] as f64) / 255.0)) as u8;
-                }
-            }
         }
         tmp
     } else {
@@ -109,7 +97,7 @@ pub fn pixel_color(
     i: usize,
     j: usize,
     camera: &Camera,
-    bvh_tree: &BvhNode,
+    sphere_list: &Vec<Sphere>,
     width: usize,
     height: usize,
     depth: u32,
@@ -130,10 +118,9 @@ pub fn pixel_color(
             t,
             offset,
         ),
-        random.gen_range(camera.time1..camera.time2),
     );
     //r.b_direction.info();
-    ray_color(r, bvh_tree, depth)
+    ray_color(r, sphere_list, depth)
 }
 
 pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
@@ -145,24 +132,18 @@ pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<
 
     let img: RgbImage = ImageBuffer::new(width.try_into().unwrap(), height.try_into().unwrap());
     let sphere_list: Vec<Sphere> = init();
-    let mut bvh_tree = BvhNode::new(&Sphere::empty_sphere());
-    bvh_tree.build(sphere_list.clone(), 0, sphere_list.len());
-    //bvh_tree.info();
     //有个data也要共享内存，要么就把值都提取出来
-    //上互斥锁
     let image = Arc::new(Mutex::new(img));
     let cam = Arc::new(camera);
-    //let sph_lst = Arc::new(sphere_list);
+    let sph_lst = Arc::new(sphere_list);
     let bar = Arc::new(bar);
-    let bvh_tree = Arc::new(bvh_tree);
 
     let mut handles = vec![];
     for j in 0..height {
         //以下开始一个线程  对共享内存的复制
         let c = Arc::clone(&cam);
-        //let sph = Arc::clone(&sph_lst);
+        let sph = Arc::clone(&sph_lst);
         let bar = Arc::clone(&bar);
-        let bvh_node = Arc::clone(&bvh_tree);
         //共享可写内存：上互斥锁
         let image = Arc::clone(&image);
         //开始线程
@@ -172,7 +153,7 @@ pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<
 
                 for _k in 0..sample {
                     let tmp_pixel_color: [u8; 3] =
-                        pixel_color(i, j, &c, &bvh_node, width, height, depth);
+                        pixel_color(i, j, &c, &sph, width, height, depth);
                     for i in 0..3 {
                         sum_pixel_color[i] += tmp_pixel_color[i] as f64;
                     }
