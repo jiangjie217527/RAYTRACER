@@ -2,6 +2,7 @@ on:
   push:
     branches:
     - master
+    - old-version-without-BVH
   pull_request:
     branches:
     - master
