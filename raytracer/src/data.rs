@@ -108,7 +108,7 @@ pub fn init() -> Vec<Sphere> {
                 v.push(Sphere {
                     tp: (1),
                     center: (center.clone()),
-                    destinity: (center + Vec3::new(0.0, 0.0, 0.0)),
+                    destinity: (center + Vec3::new(0.0, 0.2, 0.0)),
                     r: (0.2),
                     color: (color),
                     fuzz: (0.2),
@@ -125,7 +125,7 @@ pub fn init() -> Vec<Sphere> {
                 v.push(Sphere {
                     tp: (2),
                     center: (center.clone()),
-                    destinity: (center + Vec3::new(0.0, 0.0, 0.0)),
+                    destinity: (center + Vec3::new(0.0, 0.2, 0.0)),
                     r: (0.2),
                     color: (color),
                     fuzz: (random.gen_range(0.0..0.5)),
@@ -137,7 +137,7 @@ pub fn init() -> Vec<Sphere> {
                 v.push(Sphere {
                     tp: (3),
                     center: (center.clone()),
-                    destinity: (center + Vec3::new(0.0, 0.0, 0.0)),
+                    destinity: (center + Vec3::new(0.0, 0.2, 0.0)),
                     r: (0.2),
                     color: ([0; 3]),
                     fuzz: (0.2),

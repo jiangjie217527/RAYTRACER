@@ -2,6 +2,7 @@ on:
   push:
     branches:
     - master
+    - celery
   pull_request:
     branches:
     - master
