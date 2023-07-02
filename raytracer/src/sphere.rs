@@ -4,6 +4,12 @@ pub use crate::util::fabs;
 pub use crate::vec3::Vec3;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Sphere {
+    /**
+     * tp=1漫反射
+     * tp=2金属
+     * tp=3透光
+     * tp=4光源
+     */
     pub tp: u8,
     pub center: Vec3,
     pub destinity: Vec3, //移动目的地
@@ -12,8 +18,10 @@ pub struct Sphere {
     pub r: f64,
 
     pub color: [u8; 3], //颜色
-    pub fuzz: f64,      //金属磨砂效果
-    pub etia: f64,      //折射率
+    pub emit: [f64; 3],
+
+    pub fuzz: f64, //金属磨砂效果
+    pub etia: f64, //折射率
 
     pub texture_type: u8,
 }
@@ -23,16 +31,27 @@ impl Sphere {
         self.center
             + (self.destinity - self.center) * (time - self.time1) / (self.time2 - self.time1)
     }
-    pub fn hit_sphere(&self, r: Ray) -> (f64, f64) {
+    pub fn hit_sphere(&self, r: &Ray, t_min: f64, t_max: f64) -> f64 {
         let ac = r.a_origin - self.center(r.time);
         let a = r.b_direction.squared_length();
         let half_b = ac * r.b_direction;
         let c = ac.squared_length() - self.r * self.r;
         let dos = half_b * half_b - a * c;
-        if dos > 0.0 {
-            ((-half_b - f64::sqrt(dos)) / a, 2.0 * f64::sqrt(dos) / a)
+        if dos < 0.0 {
+            return f64::INFINITY;
+        }
+        let mut tmp = (-half_b - f64::sqrt(dos)) / a;
+        if tmp < t_min || tmp > t_max {
+            tmp += 2.0 * f64::sqrt(dos) / a;
+            //可能影响折射
+            if tmp < t_min || tmp > t_max {
+                tmp = f64::INFINITY;
+            }
+        }
+        if tmp < t_max && tmp > t_min {
+            tmp
         } else {
-            (-1.0, 0.0)
+            f64::INFINITY
         }
     }
     // pub fn new(
@@ -68,6 +87,7 @@ impl Sphere {
             time2: 0.0,
             r: (0.0),
             color: ([0; 3]),
+            emit: ([0.0; 3]),
             fuzz: 0.0,
             etia: 0.0,
             destinity: Vec3::zero(),

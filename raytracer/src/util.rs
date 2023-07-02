@@ -2,6 +2,7 @@ pub use crate::aabb::BvhNode;
 pub use crate::ray::Ray;
 pub use crate::sphere::Sphere;
 pub use crate::vec3::Vec3;
+pub use crate::world::Object;
 use rand::{rngs::ThreadRng, Rng};
 
 pub fn ray_dir(
@@ -124,13 +125,27 @@ pub fn random_in_unit_disk() -> Vec3 {
     }
 }
 
+pub fn cut(x: f64) -> f64 {
+    if x > 0.99 {
+        0.99
+    } else if x < 0.0 {
+        0.0
+    } else {
+        x
+    }
+}
+
 pub fn color(x: f64, y: f64, z: f64) -> [u8; 3] {
     //讲0~1之间的数扩大 ，符合RGB
-    [(255.0 * x) as u8, (255.0 * y) as u8, (255.0 * z) as u8]
+    [
+        (255.0 * cut(x)) as u8,
+        (255.0 * cut(y)) as u8,
+        (255.0 * cut(z)) as u8,
+    ]
 }
 
 //处理最近的光线交点
-pub fn hittable(r: Ray, bvh_tree: &BvhNode) -> (f64, Sphere) {
+pub fn hittable(r: Ray, bvh_tree: &BvhNode) -> (f64, Object) {
     //let mut t = f64::INFINITY;
     let t_min = 0.001;
     //let mut sphere = &Sphere::empty_sphere();

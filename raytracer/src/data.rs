@@ -1,7 +1,9 @@
+pub use crate::aarec::{Xyrect, Xzrect, Yzrect};
 pub use crate::sphere::Sphere;
 pub use crate::util::color;
 pub use crate::util::unit_vec;
 pub use crate::vec3::Vec3;
+pub use crate::world::Object;
 // use rand::{rngs::ThreadRng, Rng};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -189,7 +191,7 @@ pub fn two_perlin_spheres() -> Vec<Sphere> {
     ]
 }
 
-*/
+
 pub fn earth() -> Vec<Sphere> {
     vec![Sphere {
         center: (Vec3::new(0.0, 0.0, 0.0)),
@@ -202,5 +204,55 @@ pub fn earth() -> Vec<Sphere> {
         time1: (0.0),
         texture_type: (3),
         time2: (1.0),
-    }]
+    }
+    ]
+}
+*/
+
+pub fn ty() -> Vec<Object> {
+    vec![
+        Object::Sphere(Sphere {
+            center: (Vec3::new(0.0, 2.0, 0.0)),
+            destinity: (Vec3::new(0.0, 2.0, 0.0)),
+            r: (2.0),
+            tp: (1),
+            color: ([128, 128, 128]),
+            emit: ([0.0; 3]),
+            fuzz: (0.0),
+            etia: (0.0),
+            time1: (0.0),
+            texture_type: (2),
+            time2: (1.0),
+        }),
+        Object::Sphere(Sphere {
+            center: (Vec3::new(0.0, 7.0, 0.0)),
+            destinity: (Vec3::new(0.0, 7.0, 0.0)),
+            r: (2.0),
+            tp: (4),
+            color: ([128, 128, 128]),
+            emit: ([4.0; 3]),
+            fuzz: (0.0),
+            etia: (0.0),
+            time1: (0.0),
+            texture_type: (2),
+            time2: (1.0),
+        }),
+        Object::Sphere(Sphere {
+            //ground
+            center: (Vec3::new(0.0, -1000.0, 0.0)),
+            destinity: (Vec3::new(0.0, -1000.0, 0.0)),
+            r: (1000.0),
+            tp: (1),
+            color: ([128, 128, 128]),
+            fuzz: (0.0),
+            etia: (0.0),
+            time1: (0.0),
+            texture_type: (2),
+            time2: (1.0),
+            emit: ([0.0; 3]),
+        }),
+        Object::Xy(Xyrect::new(3.0, 5.0, 1.0, 3.0, -2.0, 1)),
+        Object::Xz(Xzrect::new(-2000.0, -2000.0, -2000.0, -2000.0, -2000.0, 1)),
+        Object::Yz(Yzrect::new(-2000.0, -2000.0, -2000.0, -2000.0, -2000.0, 1)),
+    ]
 }
