@@ -3,10 +3,11 @@ pub use crate::aabb::Aabb;
 pub use crate::ray::Ray;
 pub use crate::util::random_f64_0_1;
 pub use crate::vec3::Vec3;
+pub use crate::sphere::Sphere;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Fog {
-    boundary:Translate,
+    boundary:Sphere,
     neg_inv_density: f64,
     pub color:[f64;3],
 }
@@ -19,16 +20,16 @@ impl Fog {
     //         phase_function: Some(Arc::new(Isotropic::new2(a))),
     //     }
     // }
-    pub fn new(boundary: Translate, d: f64, color: [f64;3]) -> Self {
+    pub fn new(boundary: Sphere, d: f64, color: [f64;3]) -> Self {
         Self {
             boundary,
             neg_inv_density: -1.0 / d,
             color,
         }
     }
-    pub fn bounding_box(&self, time0: f64, time1: f64) -> Aabb {
+    pub fn bounding_box(&self) -> Aabb {
         self.boundary
-            .bounding_box()
+            .bound_box()
     }
 
     pub fn hit(
@@ -41,13 +42,13 @@ impl Fog {
         // let debugging = enabledebug && random_f64() < 0.00001;
         let mut t1 =self
         .boundary
-        .hit(r, -f64::INFINITY, f64::INFINITY);
+        .hit_sphere(r, 0.0, f64::INFINITY);
         if t1==f64::INFINITY{
             return f64::INFINITY;
         }
         let mut t2 = self
         .boundary
-        .hit(r, t1+0.0001, f64::INFINITY);
+        .hit_sphere(r, t1+0.0001, f64::INFINITY);
 
         if t2 == f64::INFINITY{
             return f64::INFINITY;
@@ -66,10 +67,6 @@ impl Fog {
 
         if t1 >= t2 {
             return f64::INFINITY;
-        }
-
-        if t1 < 0.0 {
-            t1 = 0.0;
         }
 
         let ray_length = r.b_direction.length();
@@ -105,3 +102,5 @@ impl Fog {
         (r.at(t),Vec3::new(1.0,0.0,0.0))
     }
 }
+
+

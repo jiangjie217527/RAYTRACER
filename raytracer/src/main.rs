@@ -40,7 +40,7 @@ fn main() {
     let path = "output/test.jpg";
     //let data = Data::new(1000, 1500, 60, 2, 100, 40);
     let data = Data::new(800, 800, 60, 2, 32, 50);
-    let origin = Vec3::new(278.0, 278.0, -800.0);
+    let origin = Vec3::new(478.0, 278.0, -600.0);
     let lookat = Vec3::new(278.0, 278.0, 0.0);
     let camera0 = Camera::new(
         data.width as f64 / data.height as f64,

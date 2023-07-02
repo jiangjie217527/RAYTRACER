@@ -1,8 +1,9 @@
-pub use crate::aabb::Aabb;
 pub use crate::aarec::{Xyrect, Xzrect, Yzrect};
 pub use crate::ray::Ray;
 pub use crate::vec3::Vec3;
 pub use crate::world::Object;
+pub use crate::sphere::Sphere;
+pub use crate::aabb::{Aabb, BvhNode};
 /*
 pub fn add_box(p0: Vec3, p1: Vec3, object_list:&mut Vec<Object>,emit:[f64;3],tp:u8){
     object_list.push( Object::Xy(Xyrect::new(
@@ -66,18 +67,24 @@ pub struct Boxx {
     box_min: Vec3,
     box_max: Vec3,
     sides: Vec<Object>,
+    bvh:BvhNode,
     pub emit: [f64; 3],
 }
 
 impl Boxx {
-    // pub fn empty() -> Self {
-    //     Self {
-    //         box_min: Vec3::zero(),
-    //         box_max: Vec3::zero(),
-    //         sides:Vec::new(),
-    //         emit:[0.0;3]
-    //     }
-    // }
+    pub fn empty() -> Self {
+        Self {
+            box_min: Vec3::zero(),
+            box_max: Vec3::zero(),
+            sides:Vec::new(),
+            bvh:BvhNode::new(Sphere::empty_sphere()),
+            emit:[0.0;3]
+        }
+    }
+
+    pub fn add(&mut self,obj:Object){
+        self.sides.push(obj);
+    }
     pub fn new(p0: Vec3, p1: Vec3, emit: [f64; 3], tp: u8) -> Self {
         let mut object_list = vec![Object::Xy(Xyrect::new(
             p0.x(),

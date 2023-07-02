@@ -1,7 +1,7 @@
 pub use crate::aabb::{Aabb, BvhNode};
 pub use crate::camera::Camera;
 pub use crate::color::write_color;
-pub use crate::data::{cornell_box, Data};
+pub use crate::data::{final_scene, Data};
 pub use crate::ray::Ray;
 pub use crate::sphere::Sphere;
 pub use crate::world::Object;
@@ -86,7 +86,7 @@ fn ray_color(
                     } else if sphere.texture_type == 2 {
                         let sphere_texture = perlin.turb(&(normal * sphere.r));
                         for (l, _) in tmp.clone().iter_mut().enumerate() {
-                            tmp[l] *= 0.5 * (1.0 + (4.0 * p.z() + 10.0 * sphere_texture).sin());
+                            tmp[l] *= 0.5 * (1.0 + (0.1 * p.z() + 10.0 * sphere_texture).sin());
                         }
                     } else {
                         let (u, v) = get_uv(normal);
@@ -101,7 +101,7 @@ fn ray_color(
                 //t==infity
                 //没交点那就是跟背景板（完全不发光）有交点
                 //background
-                [0.0; 3]
+                [0.0;3]
             }
         }
         Object::Xy(o) => {
@@ -257,7 +257,7 @@ pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<
     let gamma = data.gamma;
 
     let img: RgbImage = ImageBuffer::new(width.try_into().unwrap(), height.try_into().unwrap());
-    let object_list: Vec<Object> = cornell_box();
+    let object_list: Vec<Object> = final_scene();
     let mut bvh_tree = BvhNode::new(&Object::empty());
     bvh_tree.build(object_list.clone(), 0, object_list.len());
 

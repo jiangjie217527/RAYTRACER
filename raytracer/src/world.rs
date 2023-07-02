@@ -24,7 +24,7 @@ impl Object {
             Object::Xz(y) => y.bounding_box(),
             Object::Yz(x) => x.bounding_box(),
             Object::Tr(r) => r.bounding_box(),
-            Object::Fg(r) => r.bounding_box(0.0,1.0),
+            Object::Fg(r) => r.bounding_box(),
         }
     }
 
