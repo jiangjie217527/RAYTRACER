@@ -157,7 +157,7 @@ pub fn init() -> Vec<Sphere> {
     }
     v
 }
-*/
+
 
 pub fn two_perlin_spheres() -> Vec<Sphere> {
     vec![
@@ -187,4 +187,20 @@ pub fn two_perlin_spheres() -> Vec<Sphere> {
             time2: (1.0),
         },
     ]
+}
+
+*/
+pub fn earth() -> Vec<Sphere> {
+    vec![Sphere {
+        center: (Vec3::new(0.0, 0.0, 0.0)),
+        destinity: (Vec3::new(0.0, 0.0, 0.0)),
+        r: (2.0),
+        tp: (1),
+        color: ([128, 128, 128]),
+        fuzz: (0.0),
+        etia: (0.0),
+        time1: (0.0),
+        texture_type: (3),
+        time2: (1.0),
+    }]
 }

@@ -1,5 +1,6 @@
 pub use crate::util::{color, random_vec3};
 pub use crate::vec3::Vec3;
+use image::ImageBuffer;
 use rand::{rngs::ThreadRng, Rng};
 // pub struct Checker{
 //     pub odd_color:[u8;3],
@@ -11,12 +12,15 @@ use rand::{rngs::ThreadRng, Rng};
 //     }
 // }
 
-// pub fn get_uv(n:Vec3)->(f64,f64){
-//     let theta = (-n.y()).acos();
-//     let phi = f64::atan2(-n.z(), n.x())+std::f64::consts::PI;
-//     (theta/(2.0*std::f64::consts::PI),phi/std::f64::consts::PI)
-//     //(theta,phi)
-// }
+pub fn get_uv(n: Vec3) -> (f64, f64) {
+    let theta = (-n.y()).acos();
+    let phi = f64::atan2(-n.z(), n.x()) + std::f64::consts::PI;
+    (
+        phi / (2.0 * std::f64::consts::PI),
+        theta / std::f64::consts::PI,
+    )
+    //(theta,phi)
+}
 
 pub fn checher_color_value(n: Vec3) -> [f64; 3] {
     // let a = (u * 100.0) as i32;
@@ -155,40 +159,112 @@ impl Perlin {
 
         accum.abs()
     }
-    /*
-    fn perlin_interp(c: [[[Vec3; 2]; 2]; 2], _u: f64, _v: f64, _w: f64) -> f64 {
-        let uu = _u * _u * (3. - 2. * _u);
-        let vv = _v * _v * (3. - 2. * _v);
-        let ww = _w * _w * (3. - 2. * _w);
+}
 
-        let mut accum = 0.;
-        #[allow(clippy::needless_range_loop)]
-        for i in 0..2 {
-            for j in 0..2 {
-                for k in 0..2 {
-                    let weight_v = Vec3::new(_u - i as f64, _v - j as f64, _w - k as f64);
-                    accum += (i as f64 * uu as f64 + (1.0 - i as f64) * (1.0 - uu))
-                        * (j as f64 * vv as f64 + (1.0 - j as f64) * (1.0 - vv))
-                        * (k as f64 * ww as f64 + (1.0 - k as f64) * (1. - ww))
-                        * (c[i][j][k] * weight_v);
-                }
-            }
+/*
+pub struct ImageTexture {
+    data: Vec<u8>,
+    width: i32,
+    height: i32,
+    bytes_per_scanline: i32,
+}
+
+impl ImageTexture {
+    pub fn new(filename: &str) -> Self {
+        let photo = image::open(filename).unwrap();
+
+        Self {
+            data: photo.clone().into_bytes(),
+            width: photo.width() as i32,
+            height: photo.height() as i32,
+            bytes_per_scanline: (photo.width() * 3) as i32,
         }
-        accum
     }
+}
 
-    pub fn turb(&self, p: &point3) -> f64 {
-        let depth = 7;
-        let mut accum = 0.0;
-        let mut temp_p = *p;
-        let mut weight = 1.0;
-
-        for _i in 0..depth {
-            accum += weight * self.noise(&temp_p);
-            weight *= 0.5;
-            temp_p *= 2.0;
+impl Texture for ImageTexture {
+    fn value(&self, mut u: f64, mut v: f64, _p: &Vec3) -> Vec3 {
+        if self.data == [0_u8, 0] {
+            return Vec3::new(0.0, 1.0, 1.0);
         }
-        accum.abs()
+
+        u = clamp(u, 0.0, 1.0);
+        v = 1.0 - clamp(v, 0.0, 1.0);
+
+        let mut i = (u * self.width as f64) as i32;
+        let mut j = (v * self.height as f64) as i32;
+        if i >= self.width {
+            i = self.width - 1;
+        }
+        if j >= self.height {
+            j = self.height - 1;
+        }
+
+        let color_scale = 1.0 / 255.0;
+        let mut pixel: [f64; 3] = [0.0; 3];
+        pixel[0] = self.data[(j * self.bytes_per_scanline + i * 3) as usize] as f64;
+        pixel[1] = self.data[(j * self.bytes_per_scanline + i * 3 + 1) as usize] as f64;
+        pixel[2] = self.data[(j * self.bytes_per_scanline + i * 3 + 2) as usize] as f64;
+
+        Vec3::new(
+            color_scale * pixel[0],
+            color_scale * pixel[1],
+            color_scale * pixel[2],
+        )
     }
-    */
+}
+*/
+pub struct ImageTexture {
+    pub data: ImageBuffer<image::Rgb<u8>, std::vec::Vec<u8>>,
+    pub width: i64,
+    pub height: i64,
+    pub bytes_per_scanline: i64,
+    pub bytes_per_pixel: i64,
+}
+impl ImageTexture {
+    /*pub fn new0() -> Self {
+        Self {
+            data: Vec::new(),
+            bytes_per_pixel: 3,
+            width: 0,
+            height: 0,
+            bytes_per_scanline: 0,
+        }
+    }*/
+
+    pub fn new(filename: &str) -> Self {
+        let bytes_per_pixel: i64 = 3;
+        //let components_per_pixel = bytes_per_pixel;
+        let data2 = image::open(filename).unwrap().to_rgb8();
+        let width2 = data2.width();
+        let height2 = data2.height();
+
+        let bytes_per_scanline = bytes_per_pixel * (width2 as i64);
+        Self {
+            bytes_per_pixel,
+            data: data2,
+            width: width2 as i64,
+            height: height2 as i64,
+            bytes_per_scanline,
+        }
+    }
+}
+impl ImageTexture {
+    pub fn value(&self, u: f64, v: f64) -> [f64; 3] {
+        let u2 = u;
+        let v2 = 1.0 - v;
+
+        let i = (u2 * self.width as f64) as usize;
+        let j = (v2 * self.height as f64) as usize;
+
+        let color_scale = 1.0 / 255.0;
+
+        let pixel = self.data.get_pixel(i as u32, j as u32);
+        let [red, green, blue] = pixel.0;
+        [
+            color_scale * (red as f64),
+            color_scale * (green as f64),
+            color_scale * (blue as f64),
+        ]
+    }
 }

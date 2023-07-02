@@ -1,11 +1,11 @@
 pub use crate::aabb::{Aabb, BvhNode};
 pub use crate::camera::Camera;
 pub use crate::color::write_color;
-pub use crate::data::{two_perlin_spheres, Data};
+pub use crate::data::{earth, Data};
 pub use crate::ray::Ray;
 pub use crate::sphere::Sphere;
 //pub use crate::test_scene::{init_debug2, sphere_debug2};
-pub use crate::texture::{checher_color_value, Perlin};
+pub use crate::texture::{checher_color_value, get_uv, ImageTexture, Perlin};
 pub use crate::util::{
     color, hittable, random_in_unit_disk, random_in_unit_shpere, ray_dir, reflect, refract,
     unit_vec,
@@ -18,7 +18,13 @@ use rand::{rngs::ThreadRng, Rng};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32, perlin: &Perlin) -> [f64; 3] {
+fn ray_color(
+    r: Ray,
+    bvh_tree: &BvhNode,
+    depth: u32,
+    perlin: &Perlin,
+    earth: &ImageTexture,
+) -> [f64; 3] {
     if depth == 0 {
         return [0.0; 3];
     }
@@ -44,6 +50,7 @@ fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32, perlin: &Perlin) -> [f64; 3
                 bvh_tree,
                 depth - 1,
                 perlin,
+                earth,
             );
         }
         //金属材料
@@ -60,6 +67,7 @@ fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32, perlin: &Perlin) -> [f64; 3
                 bvh_tree,
                 depth - 1,
                 perlin,
+                earth,
             );
         } else {
             //折射
@@ -83,6 +91,7 @@ fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32, perlin: &Perlin) -> [f64; 3
                 bvh_tree,
                 depth - 1,
                 perlin,
+                earth,
             );
         }
         if sphere.tp != 3 {
@@ -91,15 +100,20 @@ fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32, perlin: &Perlin) -> [f64; 3
                     tmp[l] *= sphere.color[l] as f64 / 255.0;
                 }
             } else if sphere.texture_type == 1 {
-                //let (u,v) = get_uv(normal.clone());
                 let sphere_texture = checher_color_value(normal * sphere.r);
                 for (l, _) in tmp.clone().iter_mut().enumerate() {
                     tmp[l] *= sphere_texture[l];
                 }
-            } else {
+            } else if sphere.texture_type == 2 {
                 let sphere_texture = perlin.turb(&(normal * sphere.r));
                 for (l, _) in tmp.clone().iter_mut().enumerate() {
                     tmp[l] *= 0.5 * (1.0 + (4.0 * p.z() + 10.0 * sphere_texture).sin());
+                }
+            } else {
+                let (u, v) = get_uv(normal);
+                let color = earth.value(u, v);
+                for (l, _) in tmp.clone().iter_mut().enumerate() {
+                    tmp[l] *= color[l];
                 }
             }
         }
@@ -120,10 +134,10 @@ pub fn pixel_color(
     (i, j): (usize, usize),
     camera: &Camera,
     bvh_tree: &BvhNode,
-    width: usize,
-    height: usize,
+    (width, height): (usize, usize),
     depth: u32,
     perlin: &Perlin,
+    earth: &ImageTexture,
 ) -> [f64; 3] {
     let mut random: ThreadRng = rand::thread_rng();
     let s: f64 = ((i as f64) + random.gen::<f64>()) / ((width - 1) as f64); //行不变，竖直
@@ -144,7 +158,7 @@ pub fn pixel_color(
         random.gen_range(camera.time1..camera.time2),
     );
     //r.b_direction.info();
-    ray_color(r, bvh_tree, depth, perlin)
+    ray_color(r, bvh_tree, depth, perlin, earth)
 }
 
 pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
@@ -155,11 +169,12 @@ pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<
     let gamma = data.gamma;
 
     let img: RgbImage = ImageBuffer::new(width.try_into().unwrap(), height.try_into().unwrap());
-    let sphere_list: Vec<Sphere> = two_perlin_spheres();
+    let sphere_list: Vec<Sphere> = earth();
     let mut bvh_tree = BvhNode::new(&Sphere::empty_sphere());
     bvh_tree.build(sphere_list.clone(), 0, sphere_list.len());
 
     let perlin = Perlin::init();
+    let earth = ImageTexture::new("earthmap.jpg");
     //bvh_tree.info();
     //有个data也要共享内存，要么就把值都提取出来
     //上互斥锁
@@ -169,6 +184,7 @@ pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<
     let bar = Arc::new(bar);
     let bvh_tree = Arc::new(bvh_tree);
     let perlin = Arc::new(perlin);
+    let earth = Arc::new(earth);
 
     let mut handles = vec![];
     for j in 0..height {
@@ -178,6 +194,7 @@ pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<
         let bar = Arc::clone(&bar);
         let bvh_node = Arc::clone(&bvh_tree);
         let perlin = Arc::clone(&perlin);
+        let earth = Arc::clone(&earth);
         //共享可写内存：上互斥锁
         let image = Arc::clone(&image);
         //开始线程
@@ -186,8 +203,15 @@ pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<
                 let mut sum_pixel_color: [f64; 3] = [0.0; 3];
 
                 for _k in 0..sample {
-                    let tmp_pixel_color: [f64; 3] =
-                        pixel_color((i, j), &c, &bvh_node, width, height, depth, &perlin);
+                    let tmp_pixel_color: [f64; 3] = pixel_color(
+                        (i, j),
+                        &c,
+                        &bvh_node,
+                        (width, height),
+                        depth,
+                        &perlin,
+                        &earth,
+                    );
                     for i in 0..3 {
                         sum_pixel_color[i] += tmp_pixel_color[i];
                     }
