@@ -1,4 +1,6 @@
 pub use crate::aarec::{Xyrect, Xzrect, Yzrect};
+pub use crate::boxx::Boxx;
+pub use crate::rotate::Rotatey;
 pub use crate::sphere::Sphere;
 pub use crate::util::color;
 pub use crate::util::unit_vec;
@@ -263,14 +265,41 @@ pub fn cornell_box() -> Vec<Object> {
     let white = [0.73; 3];
     let green = [0.12, 0.45, 0.15];
     let light = [15.0; 3];
-    vec![
+    let mut v = vec![
         Object::Yz(Yzrect::new(0.0, 555.0, 0.0, 555.0, 555.0, green, 1)),
         Object::Yz(Yzrect::new(0.0, 555.0, 0.0, 555.0, 0.0, red, 1)),
         Object::Xz(Xzrect::new(213.0, 343.0, 227.0, 332.0, 554.0, light, 2)),
         Object::Xz(Xzrect::new(0.0, 555.0, 0.0, 555.0, 0.0, white, 1)),
         Object::Xz(Xzrect::new(0.0, 555.0, 0.0, 555.0, 555.0, white, 1)),
         Object::Xy(Xyrect::new(0.0, 555.0, 0.0, 555.0, 555.0, white, 1)),
-    ]
+    ];
+    //add_box(Vec3::new(130.0, 0.0, 65.0), Vec3::new(295.0, 165.0, 230.0), &mut v, white, 1);
+    //v.push(Object::Bx(Boxx::new(Vec3::new(265.0, 0.0, 295.0), Vec3::new(430.0, 330.0, 460.0), white, 1)));
+    v.push(Object::Rt(Rotatey::new(
+        -std::f64::consts::PI / 10.0,
+        Boxx::new(
+            Vec3::new(130.0, 0.0, 65.0),
+            Vec3::new(295.0, 165.0, 230.0),
+            white,
+            1,
+        ),
+    )));
+    v.push(Object::Rt(Rotatey::new(
+        std::f64::consts::PI / 12.0,
+        Boxx::new(
+            Vec3::new(205.0, 0.0, 295.0),
+            Vec3::new(370.0, 330.0, 460.0),
+            white,
+            1,
+        ),
+    )));
+    v.push(Object::Bx(Boxx::new(
+        Vec3::new(205.0, 0.0, -1295.0),
+        Vec3::new(370.0, 330.0, -1460.0),
+        white,
+        1,
+    )));
+    v
 }
 // objects.add(make_shared<yz_rect>(0, 555, 0, 555, 555, green));
 // objects.add(make_shared<yz_rect>(0, 555, 0, 555, 0, red));

@@ -6,6 +6,7 @@ pub use crate::world::Object;
 use rand::Rng;
 //因为要sort所以要排序的函数所以要order
 use std::cmp::Ordering;
+#[derive(Clone, Debug, PartialEq)]
 pub struct Aabb {
     pub minimum: Vec3,
     pub maximum: Vec3,

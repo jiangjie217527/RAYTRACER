@@ -1,6 +1,9 @@
 pub use crate::aabb::Aabb;
 pub use crate::aarec::{Xyrect, Xzrect, Yzrect};
 pub use crate::ray::Ray;
+
+pub use crate::boxx::Boxx;
+pub use crate::rotate::Rotatey;
 pub use crate::sphere::Sphere;
 #[derive(Clone, Debug, PartialEq)]
 pub enum Object {
@@ -8,6 +11,8 @@ pub enum Object {
     Xy(Xyrect),
     Xz(Xzrect),
     Yz(Yzrect),
+    Bx(Boxx),
+    Rt(Rotatey),
 }
 
 impl Object {
@@ -17,6 +22,8 @@ impl Object {
             Object::Xy(z) => z.bounding_box(),
             Object::Xz(y) => y.bounding_box(),
             Object::Yz(x) => x.bounding_box(),
+            Object::Bx(x) => x.bounding_box(),
+            Object::Rt(r) => r.bounding_box(),
         }
     }
 
@@ -30,6 +37,8 @@ impl Object {
             Object::Xy(z) => z.hit(r, t_min, t_max),
             Object::Xz(z) => z.hit(r, t_min, t_max),
             Object::Yz(z) => z.hit(r, t_min, t_max),
+            Object::Bx(x) => x.hit(r, t_min, t_max),
+            Object::Rt(t) => t.hit(r, t_min, t_max),
         }
     }
 }

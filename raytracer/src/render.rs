@@ -175,6 +175,46 @@ fn ray_color(
                 o.emit
             }
         }
+        Object::Bx(x) => {
+            let p: Vec3 = r.at(t);
+            let n = x.normal(&r);
+            let scatter = n + random_in_unit_shpere();
+            let mut tmp = ray_color(
+                Ray {
+                    a_origin: (p),
+                    b_direction: (scatter),
+                    time: r.time,
+                },
+                bvh_tree,
+                depth - 1,
+                perlin,
+                earth,
+            );
+            for (l, _) in tmp.clone().iter_mut().enumerate() {
+                tmp[l] *= x.emit[l];
+            }
+            tmp
+        }
+        Object::Rt(rt) => {
+            //println!("hit rotate");
+            let (p, normal) = rt.p_nor(t, &r);
+            let scatter = normal + random_in_unit_shpere();
+            let mut tmp = ray_color(
+                Ray {
+                    a_origin: (p),
+                    b_direction: (scatter),
+                    time: r.time,
+                },
+                bvh_tree,
+                depth - 1,
+                perlin,
+                earth,
+            );
+            for (l, _) in tmp.clone().iter_mut().enumerate() {
+                tmp[l] *= rt.bx.emit[l];
+            }
+            tmp
+        }
     }
 }
 
