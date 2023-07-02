@@ -1,4 +1,4 @@
-pub use crate::util::{color, random_f64_0_1};
+pub use crate::util::{color, random_vec3};
 pub use crate::vec3::Vec3;
 use rand::{rngs::ThreadRng, Rng};
 // pub struct Checker{
@@ -35,7 +35,7 @@ pub fn checher_color_value(n: Vec3) -> [f64; 3] {
 }
 
 pub struct Perlin {
-    ranfloat: Vec<f64>,
+    ranvec: Vec<Vec3>,
     pub perm_x: Vec<i32>,
     pub perm_y: Vec<i32>,
     pub perm_z: Vec<i32>,
@@ -51,12 +51,12 @@ impl Perlin {
     // }
 
     pub fn init() -> Self {
-        let mut ranfloat: Vec<f64> = Vec::new();
+        let mut ranvec: Vec<Vec3> = Vec::new();
         for _i in 0..256 {
-            ranfloat.push(random_f64_0_1());
+            ranvec.push(random_vec3());
         }
         Self {
-            ranfloat,
+            ranvec,
             perm_x: Self::perlin_generate_perm(),
             perm_y: Self::perlin_generate_perm(),
             perm_z: Self::perlin_generate_perm(),
@@ -100,12 +100,12 @@ impl Perlin {
         let j = n.y().floor() as i32;
         let k = n.z().floor() as i32;
 
-        let mut c = [[[0.0; 2]; 2]; 2];
+        let mut c = [[[Vec3::new(0.0, 0.0, 0.0); 2]; 2]; 2];
 
         for (x, item) in c.clone().iter().enumerate() {
             for (y, item2) in item.iter().enumerate() {
                 for (z, _) in item2.iter().enumerate() {
-                    c[x][y][z] = self.ranfloat[self.perm_x[(i + x as i32) as usize & 255] as usize
+                    c[x][y][z] = self.ranvec[self.perm_x[(i + x as i32) as usize & 255] as usize
                         ^ self.perm_y[(j + y as i32) as usize & 255] as usize
                         ^ self.perm_z[(k + z as i32) as usize & 255] as usize];
                 }
@@ -124,20 +124,36 @@ impl Perlin {
 
         Perlin::trilinear_interp(c, u, v, w)
     }
-    pub fn trilinear_interp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+    pub fn trilinear_interp(c: [[[Vec3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
         let mut accum = 0.0;
         for (i, item) in c.clone().iter().enumerate() {
             for (j, item2) in item.iter().enumerate() {
                 for (k, _) in item2.iter().enumerate() {
+                    let weight_v = Vec3::new(u - i as f64, v - j as f64, w - k as f64);
                     accum += (i as f64 * u + (1 - i) as f64 * (1.0 - u))
                         * (j as f64 * v + (1 - j) as f64 * (1.0 - v))
                         * (k as f64 * w + (1 - k) as f64 * (1.0 - w))
-                        * c[i][j][k];
+                        * (c[i][j][k] * weight_v);
                 }
             }
         }
 
         accum
+    }
+    pub fn turb(&self, p: &Vec3) -> f64 {
+        let depth = 7;
+        let mut accum = 0.0;
+        let mut temp_p = *p;
+        let mut weight = 1.0;
+        let mut i = 0;
+        while i < depth {
+            accum += weight * self.noise(&temp_p);
+            weight *= 0.5;
+            temp_p = temp_p * 2.0;
+            i += 1;
+        }
+
+        accum.abs()
     }
     /*
     fn perlin_interp(c: [[[Vec3; 2]; 2]; 2], _u: f64, _v: f64, _w: f64) -> f64 {

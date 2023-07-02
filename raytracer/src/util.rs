@@ -12,14 +12,14 @@ pub fn ray_dir(
     v: f64,
     offset: Vec3,
 ) -> Vec3 {
-    lower_left_corner.clone()//从左下角开始
-    + horizontal.clone() * u //水平方向
-    + vertical.clone() * v //竖直方向
+    *lower_left_corner//从左下角开始
+    + *horizontal * u //水平方向
+    + *vertical * v //竖直方向
     -offset
 }
 //单位向量的工具
 pub fn unit_vec(v: Vec3) -> Vec3 {
-    v.clone() / v.length()
+    v / v.length()
 }
 pub fn fabs(num: f64) -> f64 {
     if num < 0.0 {
@@ -54,14 +54,14 @@ pub fn reflectance(cos_theta: f64, ratio: f64) -> f64 {
 pub fn refract(v: Vec3, n: Vec3, ratio: f64) -> Vec3 {
     //v,n为单位向量
     //按道理应该不会有cos比1大
-    let cos_theta = (Vec3::zero() - v.clone()) * n.clone();
+    let cos_theta = (Vec3::zero() - v) * n;
     let sin_theta = f64::sqrt(1.0 - cos_theta * cos_theta);
     let mut random: ThreadRng = rand::thread_rng();
     if ratio * sin_theta >= 1.0 || reflectance(cos_theta, ratio) > random.gen::<f64>() {
         //println!("reflect");
         reflect(v, n)
     } else {
-        let perp = (v + n.clone() * cos_theta) * ratio;
+        let perp = (v + n * cos_theta) * ratio;
         let para = Vec3::zero() - n * f64::sqrt(fabs(1.0 - perp.squared_length()));
         perp + para
     }
@@ -69,7 +69,7 @@ pub fn refract(v: Vec3, n: Vec3, ratio: f64) -> Vec3 {
 //反射模块，简单
 pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
     //v,n为单位向量
-    v.clone() - n.clone() * (v * n) * 2.0
+    v - n * (v * n) * 2.0
 }
 
 pub fn random_in_unit_shpere() -> Vec3 {
@@ -91,11 +91,18 @@ pub fn random_in_unit_shpere() -> Vec3 {
         }
     }
 }
-
-pub fn random_f64_0_1() -> f64 {
+pub fn random_vec3() -> Vec3 {
     let mut random: ThreadRng = rand::thread_rng();
-    random.gen::<f64>()
+    Vec3::new(
+        random.gen_range(-1.0..1.0),
+        random.gen_range(-1.0..1.0),
+        random.gen_range(-1.0..1.0),
+    )
 }
+// pub fn random_f64_0_1() -> f64 {
+//     let mut random: ThreadRng = rand::thread_rng();
+//     random.gen::<f64>()
+// }
 
 pub fn random_in_unit_disk() -> Vec3 {
     let mut random: ThreadRng = rand::thread_rng();

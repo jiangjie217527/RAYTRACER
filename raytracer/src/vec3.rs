@@ -1,6 +1,6 @@
 use crate::util::{fmax, fmin};
 use std::ops::{Add, AddAssign, Div, Mul, Sub};
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Copy)]
 pub struct Vec3 {
     x: f64,
     y: f64,

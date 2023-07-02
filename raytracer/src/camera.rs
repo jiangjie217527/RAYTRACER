@@ -34,14 +34,14 @@ impl Camera {
         aperture: f64,
         focus_dist: f64,
     ) -> Self {
-        let w = unit_vec(origin.clone() - lookat.clone());
-        let u = unit_vec(Vec3::new(0.0, 1.0, 0.0).cross(w.clone()));
-        let v = w.cross(u.clone());
+        let w = unit_vec(origin - lookat);
+        let u = unit_vec(Vec3::new(0.0, 1.0, 0.0).cross(w));
+        let v = w.cross(u);
         let h = (fov / 2.0).tan();
         Self {
-            u: u.clone(),
-            v: v.clone(),
-            w: w.clone(),
+            u,
+            v,
+            w,
             viewport_height: viewport_height * h,
             viewport_width: viewport_height * ratio * h,
             origin,
@@ -52,8 +52,8 @@ impl Camera {
             time2: 1.0,
             len_radius: aperture / 2.0,
             focus_dist,
-            horizontal: u.clone() * viewport_height * ratio * h * focus_dist,
-            vertical: v.clone() * viewport_height * h * focus_dist,
+            horizontal: u * viewport_height * ratio * h * focus_dist,
+            vertical: v * viewport_height * h * focus_dist,
             lower_left_corner: Vec3::zero()
                 - u * viewport_height * h * ratio * focus_dist / 2.0
                 - v * viewport_height * h * focus_dist / 2.0

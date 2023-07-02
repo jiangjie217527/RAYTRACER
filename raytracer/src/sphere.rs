@@ -20,14 +20,13 @@ pub struct Sphere {
 
 impl Sphere {
     pub fn center(&self, time: f64) -> Vec3 {
-        self.center.clone()
-            + (self.destinity.clone() - self.center.clone()) * (time - self.time1)
-                / (self.time2 - self.time1)
+        self.center
+            + (self.destinity - self.center) * (time - self.time1) / (self.time2 - self.time1)
     }
     pub fn hit_sphere(&self, r: Ray) -> (f64, f64) {
         let ac = r.a_origin - self.center(r.time);
         let a = r.b_direction.squared_length();
-        let half_b = ac.clone() * r.b_direction;
+        let half_b = ac * r.b_direction;
         let c = ac.squared_length() - self.r * self.r;
         let dos = half_b * half_b - a * c;
         if dos > 0.0 {

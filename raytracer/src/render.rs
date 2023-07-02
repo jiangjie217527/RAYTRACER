@@ -28,12 +28,12 @@ fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32, perlin: &Perlin) -> [f64; 3
         //有正确的交点
         let p: Vec3 = r.at(t);
 
-        let normal: Vec3 = unit_vec(p.clone() - sphere.center.clone());
+        let normal: Vec3 = unit_vec(p - sphere.center);
         let mut tmp: [f64; 3];
 
         //漫反射材料
         if sphere.tp == 1 {
-            let scatter: Vec3 = normal.clone() + random_in_unit_shpere();
+            let scatter: Vec3 = normal + random_in_unit_shpere();
 
             tmp = ray_color(
                 Ray {
@@ -48,8 +48,8 @@ fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32, perlin: &Perlin) -> [f64; 3
         }
         //金属材料
         else if sphere.tp == 2 {
-            let reflect: Vec3 = reflect(unit_vec(r.b_direction), normal.clone())
-                + random_in_unit_shpere() * sphere.fuzz;
+            let reflect: Vec3 =
+                reflect(unit_vec(r.b_direction), normal) + random_in_unit_shpere() * sphere.fuzz;
 
             tmp = ray_color(
                 Ray {
@@ -65,14 +65,14 @@ fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32, perlin: &Perlin) -> [f64; 3
             //折射
             let ratio;
             let dir;
-            if sphere.front_back(r.b_direction.clone(), normal.clone()) {
+            if sphere.front_back(r.b_direction, normal) {
                 ratio = 1.0 / sphere.etia;
                 dir = 1.0;
             } else {
                 ratio = sphere.etia;
                 dir = -1.0;
             }
-            let refract = refract(unit_vec(r.b_direction), normal.clone() * dir, ratio);
+            let refract = refract(unit_vec(r.b_direction), normal * dir, ratio);
 
             tmp = ray_color(
                 Ray {
@@ -97,9 +97,9 @@ fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32, perlin: &Perlin) -> [f64; 3
                     tmp[l] *= sphere_texture[l];
                 }
             } else {
-                let sphere_texture = perlin.noise(&(normal * sphere.r * 4.0));
+                let sphere_texture = perlin.turb(&(normal * sphere.r));
                 for (l, _) in tmp.clone().iter_mut().enumerate() {
-                    tmp[l] *= sphere_texture;
+                    tmp[l] *= 0.5 * (1.0 + (4.0 * p.z() + 10.0 * sphere_texture).sin());
                 }
             }
         }
@@ -130,9 +130,9 @@ pub fn pixel_color(
     let t: f64 = (((height - 1 - j) as f64) + random.gen::<f64>()) / ((height - 1) as f64);
     //由于要产生新的变量所以不能引用
     let rd = random_in_unit_disk() * camera.len_radius;
-    let offset = camera.u.clone() * rd.x() + camera.v.clone() * rd.y();
+    let offset = camera.u * rd.x() + camera.v * rd.y();
     let r = Ray::new(
-        camera.origin.clone() + offset.clone(),
+        camera.origin + offset,
         ray_dir(
             &camera.lower_left_corner,
             &camera.horizontal,
