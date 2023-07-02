@@ -92,6 +92,11 @@ pub fn random_in_unit_shpere() -> Vec3 {
     }
 }
 
+pub fn random_f64_0_1() -> f64 {
+    let mut random: ThreadRng = rand::thread_rng();
+    random.gen::<f64>()
+}
+
 pub fn random_in_unit_disk() -> Vec3 {
     let mut random: ThreadRng = rand::thread_rng();
     loop {

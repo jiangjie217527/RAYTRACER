@@ -63,7 +63,7 @@ pub fn init() -> Vec<Sphere> {
             fuzz: (0.0),
             etia: (0.0),
             time1: (0.0),
-            texture_type: (1),
+            texture_type: (2),
             time2: (1.0),
         },
         Sphere {
@@ -157,8 +157,9 @@ pub fn init() -> Vec<Sphere> {
     }
     v
 }
-/*
-pub fn init2()->Vec<Sphere>{
+
+
+pub fn two_perlin_spheres()->Vec<Sphere>{
     vec![        Sphere {
         //ground
         center: (Vec3::new(0.0, -1000.0, 0.0)),
@@ -169,35 +170,19 @@ pub fn init2()->Vec<Sphere>{
         fuzz: (0.0),
         etia: (0.0),
         time1: (0.0),
-        texture_type:(1),
+        texture_type: (2),
+        time2: (1.0),
+    },
+    Sphere {
+        center: (Vec3::new(0.0, 2.0, 0.0)),
+        destinity: (Vec3::new(0.0, 2.0, 0.0)),
+        r: (2.0),
+        tp: (1),
+        color: ([128, 128, 128]),
+        fuzz: (0.0),
+        etia: (0.0),
+        time1: (0.0),
+        texture_type: (2),
         time2: (1.0),
     }]
 }
-
-pub fn init3()->Vec<Sphere>{
-    vec![        Sphere {
-        center: (Vec3::new(0.0, -10.0, 0.0)),
-        destinity: (Vec3::new(0.0, -10.0, 0.0)),
-        r: (10.0),
-        tp: (1),
-        color: ([128, 128, 128]),
-        fuzz: (0.0),
-        etia: (0.0),
-        time1: (0.0),
-        texture_type:(1),
-        time2: (1.0),
-    },Sphere {
-        //ground
-        center: (Vec3::new(0.0, 10.0, 0.0)),
-        destinity: (Vec3::new(0.0, 10.0, 0.0)),
-        r: (10.0),
-        tp: (1),
-        color: ([128, 128, 128]),
-        fuzz: (0.0),
-        etia: (0.0),
-        time1: (0.0),
-        texture_type:(1),
-        time2: (1.0),}
-        ]
-}
-*/
