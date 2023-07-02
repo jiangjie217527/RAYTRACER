@@ -4,29 +4,32 @@ pub use crate::sphere::Sphere;
 pub use crate::vec3::Vec3;
 //use std::sync::Arc;
 #[derive(Clone, Debug, PartialEq)]
+
+//tp == 1 漫反射
+//tp == 2 发光
+
 pub struct Xyrect {
-    mp: u8,
+    pub emit: [f64; 3],
     x0: f64,
     x1: f64,
     y0: f64,
     y1: f64,
     k: f64,
+    pub tp: u8,
 }
 
 impl Xyrect {
-    pub fn new(x0: f64, x1: f64, y0: f64, y1: f64, k: f64, mp: u8) -> Self {
+    pub fn new(x0: f64, x1: f64, y0: f64, y1: f64, k: f64, emit: [f64; 3], tp: u8) -> Self {
         Self {
-            mp,
+            emit,
             x0,
             x1,
             y0,
             y1,
             k,
+            tp,
         }
     }
-}
-
-impl Xyrect {
     pub fn bounding_box(&self) -> Aabb {
         // The bounding box must have non-zero width in each dimension, so pad the Z
         // dimension a small amount.
@@ -48,31 +51,39 @@ impl Xyrect {
         }
         t
     }
+    pub fn normal(&self, r: &Ray) -> Vec3 {
+        let n = Vec3::new(0.0, 0.0, 1.0);
+        if n * r.b_direction > 0.0 {
+            n * (-1.0)
+        } else {
+            n
+        }
+    }
 }
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Xzrect {
-    mp: u8,
+    pub emit: [f64; 3],
     x0: f64,
     x1: f64,
     z0: f64,
     z1: f64,
-    k: f64,
+    pub tp: u8,
+    pub k: f64,
 }
 
 impl Xzrect {
-    pub fn new(x0: f64, x1: f64, z0: f64, z1: f64, k: f64, mp: u8) -> Self {
+    pub fn new(x0: f64, x1: f64, z0: f64, z1: f64, k: f64, emit: [f64; 3], tp: u8) -> Self {
         Self {
-            mp,
+            emit,
             x0,
             x1,
             z0,
             z1,
             k,
+            tp,
         }
     }
-}
-
-impl Xzrect {
     pub fn bounding_box(&self) -> Aabb {
         // The bounding box must have non-zero width in each dimension, so pad the Z
         // dimension a small amount.
@@ -94,31 +105,39 @@ impl Xzrect {
         }
         t
     }
+    pub fn normal(&self, r: &Ray) -> Vec3 {
+        let n = Vec3::new(0.0, 1.0, 0.0);
+        if n * r.b_direction > 0.0 {
+            n * (-1.0)
+        } else {
+            n
+        }
+    }
 }
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Yzrect {
-    mp: u8,
+    pub emit: [f64; 3],
     y0: f64,
     y1: f64,
     z0: f64,
     z1: f64,
     k: f64,
+    pub tp: u8,
 }
 
 impl Yzrect {
-    pub fn new(y0: f64, y1: f64, z0: f64, z1: f64, k: f64, mp: u8) -> Self {
+    pub fn new(y0: f64, y1: f64, z0: f64, z1: f64, k: f64, emit: [f64; 3], tp: u8) -> Self {
         Self {
-            mp,
+            emit,
             y0,
             y1,
             z0,
             z1,
             k,
+            tp,
         }
     }
-}
-
-impl Yzrect {
     pub fn bounding_box(&self) -> Aabb {
         // The bounding box must have non-zero width in each dimension, so pad the Z
         // dimension a small amount.
@@ -139,5 +158,13 @@ impl Yzrect {
             return f64::INFINITY;
         }
         t
+    }
+    pub fn normal(&self, r: &Ray) -> Vec3 {
+        let n = Vec3::new(1.0, 0.0, 0.0);
+        if n * r.b_direction > 0.0 {
+            n * (-1.0)
+        } else {
+            n
+        }
     }
 }

@@ -1,7 +1,7 @@
 pub use crate::aabb::{Aabb, BvhNode};
 pub use crate::camera::Camera;
 pub use crate::color::write_color;
-pub use crate::data::{ty, Data};
+pub use crate::data::{cornell_box, Data};
 pub use crate::ray::Ray;
 pub use crate::sphere::Sphere;
 pub use crate::world::Object;
@@ -35,42 +35,19 @@ fn ray_color(
             if t != f64::INFINITY {
                 //有正确的交点
                 let p: Vec3 = r.at(t);
-
                 let normal: Vec3 = unit_vec(p - sphere.center);
-                let mut tmp: [f64; 3];
-
+                let mut scatter: Vec3 = Vec3::ones();
+                if sphere.tp == 4 {
+                    return sphere.emit;
+                }
                 //漫反射材料
                 if sphere.tp == 1 {
-                    let scatter: Vec3 = normal + random_in_unit_shpere();
-
-                    tmp = ray_color(
-                        Ray {
-                            a_origin: (p),
-                            b_direction: (scatter),
-                            time: r.time,
-                        },
-                        bvh_tree,
-                        depth - 1,
-                        perlin,
-                        earth,
-                    );
+                    scatter = normal + random_in_unit_shpere();
                 }
                 //金属材料
                 else if sphere.tp == 2 {
-                    let reflect: Vec3 = reflect(unit_vec(r.b_direction), normal)
+                    scatter = reflect(unit_vec(r.b_direction), normal)
                         + random_in_unit_shpere() * sphere.fuzz;
-
-                    tmp = ray_color(
-                        Ray {
-                            a_origin: (p),
-                            b_direction: (reflect),
-                            time: r.time,
-                        },
-                        bvh_tree,
-                        depth - 1,
-                        perlin,
-                        earth,
-                    );
                 } else if sphere.tp == 3 {
                     //折射
                     let ratio;
@@ -82,23 +59,20 @@ fn ray_color(
                         ratio = sphere.etia;
                         dir = -1.0;
                     }
-                    let refract = refract(unit_vec(r.b_direction), normal * dir, ratio);
-
-                    tmp = ray_color(
-                        Ray {
-                            a_origin: (p),
-                            b_direction: (refract),
-                            time: r.time,
-                        },
-                        bvh_tree,
-                        depth - 1,
-                        perlin,
-                        earth,
-                    );
-                } else {
-                    //发光
-                    tmp = sphere.emit;
+                    scatter = refract(unit_vec(r.b_direction), normal * dir, ratio);
                 }
+                let mut tmp: [f64; 3];
+                tmp = ray_color(
+                    Ray {
+                        a_origin: (p),
+                        b_direction: (scatter),
+                        time: r.time,
+                    },
+                    bvh_tree,
+                    depth - 1,
+                    perlin,
+                    earth,
+                );
                 if sphere.tp < 3 {
                     if sphere.texture_type == 0 {
                         for (l, _) in tmp.clone().iter_mut().enumerate() {
@@ -125,14 +99,82 @@ fn ray_color(
                 tmp
             } else {
                 //t==infity
-                //没交点那就是跟背景板（完全发光）有交点
+                //没交点那就是跟背景板（完全不发光）有交点
                 [0.0; 3]
             }
         }
-        _ => [4.0; 3],
-        // object::Xy(z)=>[4.0;3],
-        // object::Xz(y)=>[4.0;3],
-        // object::Yz(x)=>[4.0;3],
+        Object::Xy(o) => {
+            if o.tp == 1 {
+                let p: Vec3 = r.at(t);
+                let n = o.normal(&r);
+                let scatter = n + random_in_unit_shpere();
+                let mut tmp = ray_color(
+                    Ray {
+                        a_origin: (p),
+                        b_direction: (scatter),
+                        time: r.time,
+                    },
+                    bvh_tree,
+                    depth - 1,
+                    perlin,
+                    earth,
+                );
+                for (l, _) in tmp.clone().iter_mut().enumerate() {
+                    tmp[l] *= o.emit[l];
+                }
+                tmp
+            } else {
+                o.emit
+            }
+        }
+        Object::Xz(o) => {
+            if o.tp == 1 {
+                let p: Vec3 = r.at(t);
+                let n = o.normal(&r);
+                let scatter = n + random_in_unit_shpere();
+                let mut tmp = ray_color(
+                    Ray {
+                        a_origin: (p),
+                        b_direction: (scatter),
+                        time: r.time,
+                    },
+                    bvh_tree,
+                    depth - 1,
+                    perlin,
+                    earth,
+                );
+                for (l, _) in tmp.clone().iter_mut().enumerate() {
+                    tmp[l] *= o.emit[l];
+                }
+                tmp
+            } else {
+                o.emit
+            }
+        }
+        Object::Yz(o) => {
+            if o.tp == 1 {
+                let p: Vec3 = r.at(t);
+                let n = o.normal(&r);
+                let scatter = n + random_in_unit_shpere();
+                let mut tmp = ray_color(
+                    Ray {
+                        a_origin: (p),
+                        b_direction: (scatter),
+                        time: r.time,
+                    },
+                    bvh_tree,
+                    depth - 1,
+                    perlin,
+                    earth,
+                );
+                for (l, _) in tmp.clone().iter_mut().enumerate() {
+                    tmp[l] *= o.emit[l];
+                }
+                tmp
+            } else {
+                o.emit
+            }
+        }
     }
 }
 
@@ -175,7 +217,7 @@ pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<
     let gamma = data.gamma;
 
     let img: RgbImage = ImageBuffer::new(width.try_into().unwrap(), height.try_into().unwrap());
-    let object_list: Vec<Object> = ty();
+    let object_list: Vec<Object> = cornell_box();
     let mut bvh_tree = BvhNode::new(&Object::empty());
     bvh_tree.build(object_list.clone(), 0, object_list.len());
 

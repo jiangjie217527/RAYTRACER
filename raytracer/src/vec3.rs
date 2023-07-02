@@ -72,9 +72,9 @@ impl Vec3 {
             z: fmax(v1.z, v2.z),
         }
     }
-    // pub fn ones() -> Self {
-    //     Self::new(1.0, 1.0, 1.0)
-    // }
+    pub fn ones() -> Self {
+        Self::new(1.0, 1.0, 1.0)
+    }
 
     pub fn zero() -> Self {
         Self::new(0.0, 0.0, 0.0)

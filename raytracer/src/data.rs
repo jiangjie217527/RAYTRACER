@@ -208,7 +208,7 @@ pub fn earth() -> Vec<Sphere> {
     ]
 }
 */
-
+/*
 pub fn ty() -> Vec<Object> {
     vec![
         Object::Sphere(Sphere {
@@ -256,3 +256,25 @@ pub fn ty() -> Vec<Object> {
         Object::Yz(Yzrect::new(-2000.0, -2000.0, -2000.0, -2000.0, -2000.0, 1)),
     ]
 }
+*/
+
+pub fn cornell_box() -> Vec<Object> {
+    let red = [0.65, 0.05, 0.05];
+    let white = [0.73; 3];
+    let green = [0.12, 0.45, 0.15];
+    let light = [15.0; 3];
+    vec![
+        Object::Yz(Yzrect::new(0.0, 555.0, 0.0, 555.0, 555.0, green, 1)),
+        Object::Yz(Yzrect::new(0.0, 555.0, 0.0, 555.0, 0.0, red, 1)),
+        Object::Xz(Xzrect::new(213.0, 343.0, 227.0, 332.0, 554.0, light, 2)),
+        Object::Xz(Xzrect::new(0.0, 555.0, 0.0, 555.0, 0.0, white, 1)),
+        Object::Xz(Xzrect::new(0.0, 555.0, 0.0, 555.0, 555.0, white, 1)),
+        Object::Xy(Xyrect::new(0.0, 555.0, 0.0, 555.0, 555.0, white, 1)),
+    ]
+}
+// objects.add(make_shared<yz_rect>(0, 555, 0, 555, 555, green));
+// objects.add(make_shared<yz_rect>(0, 555, 0, 555, 0, red));
+// objects.add(make_shared<xz_rect>(213, 343, 227, 332, 554, light));
+// objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0, white));
+// objects.add(make_shared<xz_rect>(0, 555, 0, 555, 555, white));
+// objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
