@@ -81,12 +81,63 @@ impl Perlin {
         }
     }
 
-    pub fn noise(&self, n: &Vec3) -> f64 {
-        let i = (((n.x() * 4.0) as i32) & 255) as usize;
-        let j = (((n.y() * 4.0) as i32) & 255) as usize;
-        let k = (((n.z() * 4.0) as i32) & 255) as usize;
+    // pub fn noise(&self, n: &Vec3) -> f64 {
 
-        self.ranfloat[self.perm_x[i] as usize ^ self.perm_y[j] as usize ^ self.perm_z[k] as usize]
+    //     let i = (((n.x() * 4.0) as i32) & 255) as usize;
+    //     let j = (((n.y() * 4.0) as i32) & 255) as usize;
+    //     let k = (((n.z() * 4.0) as i32) & 255) as usize;
+
+    //     self.ranfloat[self.perm_x[i] as usize ^ self.perm_y[j] as usize ^ self.perm_z[k] as usize]
+    // }
+    pub fn noise(&self, n: &Vec3) -> f64 {
+        let mut u = n.x() - n.x().floor();
+        let mut v = n.y() - n.y().floor();
+        let mut w = n.z() - n.z().floor();
+        u = u * u * (3.0 - 2.0 * u);
+        v = v * v * (3.0 - 2.0 * v);
+        w = w * w * (3.0 - 2.0 * w);
+        let i = n.x().floor() as i32;
+        let j = n.y().floor() as i32;
+        let k = n.z().floor() as i32;
+
+        let mut c = [[[0.0; 2]; 2]; 2];
+
+        for (x, item) in c.clone().iter().enumerate() {
+            for (y, item2) in item.iter().enumerate() {
+                for (z, _) in item2.iter().enumerate() {
+                    c[x][y][z] = self.ranfloat[self.perm_x[(i + x as i32) as usize & 255] as usize
+                        ^ self.perm_y[(j + y as i32) as usize & 255] as usize
+                        ^ self.perm_z[(k + z as i32) as usize & 255] as usize];
+                }
+            }
+        }
+        // for x in 0..2 {
+        //     for y in 0..2 {
+        //         for z in 0..2 {
+        //             c[x as usize][y as usize][z as usize] =
+        //                 self.ranfloat[self.perm_x[(i + x) as usize & 255] as usize
+        //                     ^ self.perm_y[(j + y) as usize & 255] as usize
+        //                     ^ self.perm_z[(k + z) as usize & 255] as usize];
+        //         }
+        //     }
+        // }
+
+        Perlin::trilinear_interp(c, u, v, w)
+    }
+    pub fn trilinear_interp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+        let mut accum = 0.0;
+        for (i, item) in c.clone().iter().enumerate() {
+            for (j, item2) in item.iter().enumerate() {
+                for (k, _) in item2.iter().enumerate() {
+                    accum += (i as f64 * u + (1 - i) as f64 * (1.0 - u))
+                        * (j as f64 * v + (1 - j) as f64 * (1.0 - v))
+                        * (k as f64 * w + (1 - k) as f64 * (1.0 - w))
+                        * c[i][j][k];
+                }
+            }
+        }
+
+        accum
     }
     /*
     fn perlin_interp(c: [[[Vec3; 2]; 2]; 2], _u: f64, _v: f64, _w: f64) -> f64 {

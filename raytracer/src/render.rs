@@ -97,7 +97,7 @@ fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32, perlin: &Perlin) -> [f64; 3
                     tmp[l] *= sphere_texture[l];
                 }
             } else {
-                let sphere_texture = perlin.noise(&(normal * sphere.r));
+                let sphere_texture = perlin.noise(&(normal * sphere.r * 4.0));
                 for (l, _) in tmp.clone().iter_mut().enumerate() {
                     tmp[l] *= sphere_texture;
                 }
