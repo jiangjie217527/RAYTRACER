@@ -1,6 +1,7 @@
 pub use crate::aarec::{Xyrect, Xzrect, Yzrect};
 pub use crate::boxx::Boxx;
-pub use crate::rotate::Rotatey;
+pub use crate::rotate::{Rotatey,Translate};
+pub use crate::constant_medium::Fog;
 pub use crate::sphere::Sphere;
 pub use crate::util::color;
 pub use crate::util::unit_vec;
@@ -275,35 +276,31 @@ pub fn cornell_box() -> Vec<Object> {
     ];
     //add_box(Vec3::new(130.0, 0.0, 65.0), Vec3::new(295.0, 165.0, 230.0), &mut v, white, 1);
     //v.push(Object::Bx(Boxx::new(Vec3::new(265.0, 0.0, 295.0), Vec3::new(430.0, 330.0, 460.0), white, 1)));
-    v.push(Object::Rt(Rotatey::new(
+    let offset2 = Vec3::new(265.0,0.0,295.0);
+    let offset1 = Vec3::new(130.0,0.0,65.0);
+    v.push(Object::Fg(Fog::new(Translate::new(Rotatey::new(
         -std::f64::consts::PI / 10.0,
         Boxx::new(
-            Vec3::new(130.0, 0.0, 65.0),
-            Vec3::new(295.0, 165.0, 230.0),
+            Vec3::new(0.0, 0.0, 0.0),
+            Vec3::new(165.0,165.0,165.0),
             white,
             1,
         ),
-    )));
-    v.push(Object::Rt(Rotatey::new(
+    )
+,offset1),0.01,[1.0;3])));
+    v.push(Object::Fg(Fog::new(Translate::new(Rotatey::new(
         std::f64::consts::PI / 12.0,
         Boxx::new(
-            Vec3::new(205.0, 0.0, 295.0),
-            Vec3::new(370.0, 330.0, 460.0),
+            Vec3::new(0.0, 0.0, 0.0),
+            Vec3::new(165.0, 330.0, 165.0),
             white,
             1,
         ),
-    )));
-    v.push(Object::Bx(Boxx::new(
-        Vec3::new(205.0, 0.0, -1295.0),
-        Vec3::new(370.0, 330.0, -1460.0),
-        white,
-        1,
-    )));
+    ),offset2),0.01,[0.0;3])));
     v
 }
-// objects.add(make_shared<yz_rect>(0, 555, 0, 555, 555, green));
-// objects.add(make_shared<yz_rect>(0, 555, 0, 555, 0, red));
-// objects.add(make_shared<xz_rect>(213, 343, 227, 332, 554, light));
-// objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0, white));
-// objects.add(make_shared<xz_rect>(0, 555, 0, 555, 555, white));
-// objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
+
+
+// pub fn final_scene()-> Vec<Object>{
+
+// }

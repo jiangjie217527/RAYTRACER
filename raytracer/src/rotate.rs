@@ -9,11 +9,11 @@ pub struct Rotatey {
     sin_theta: f64,
     cos_theta: f64,
     bbox: Aabb,
-    pub bx: Boxx,
+    pub bx_ro: Boxx,
 }
 impl Rotatey {
-    pub fn new(radians: f64, bx: Boxx) -> Self {
-        let mut bounbox = bx.bounding_box();
+    pub fn new(radians: f64, bx_ro: Boxx) -> Self {
+        let mut bounbox = bx_ro.bounding_box();
         let sin_theta = radians.sin();
         let cos_theta = radians.cos();
 
@@ -51,7 +51,7 @@ impl Rotatey {
             sin_theta,
             cos_theta,
             bbox: bounbox,
-            bx,
+            bx_ro,
         }
     }
     pub fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> f64 {
@@ -65,7 +65,7 @@ impl Rotatey {
 
         let rotated_r = Ray::new(origin, direction, r.time);
 
-        self.bx.hit(&rotated_r, t_min, t_max)
+        self.bx_ro.hit(&rotated_r, t_min, t_max)
     }
 
     pub fn p_nor(&self, t: f64, r: &Ray) -> (Vec3, Vec3) {
@@ -81,7 +81,7 @@ impl Rotatey {
 
         let p = rotated_r.at(t);
         let mut pp = p;
-        let normal = self.bx.normal(&rotated_r);
+        let normal = self.bx_ro.normal(&rotated_r);
         let mut nnormal = normal;
 
         pp.x = self.cos_theta * p.x() + self.sin_theta * p.z();
@@ -97,14 +97,30 @@ impl Rotatey {
         self.bbox.clone()
     }
 }
+#[derive(Clone, Debug, PartialEq)]
+pub struct Translate{
+    pub bx_tr:Rotatey,
+    offset:Vec3
+}
 
-// pub struct translate{
-//     bx:Boxx,
-//     offset:Vec3
-// }
+impl Translate{
+    pub fn new(bx_tr:Rotatey,offset:Vec3)->Self{
+        Self { bx_tr, offset}
+    }
+    pub fn bounding_box(&self) -> Aabb {
+        Aabb::new(
+        self.bx_tr.bbox.minimum+self.offset,
+        self.bx_tr.bbox.maximum+self.offset)
+    }
 
-// impl translate{
-//     pub fn new(){
+    pub fn hit(&self,r:&Ray,t_min:f64,t_max:f64)->f64{
+        let moved_ray = Ray::new(r.a_origin-self.offset, r.b_direction, r.time);
+        self.bx_tr.hit(&moved_ray, t_min, t_max)
+    }
 
-//     }
-// }
+    pub fn p_nor(&self, t: f64, r: &Ray) -> (Vec3, Vec3){
+        let moved_ray = Ray::new(r.a_origin-self.offset, r.b_direction, r.time);
+        let (p,normal) = self.bx_tr.p_nor(t, &moved_ray);
+        (p+self.offset,normal)
+    }
+}

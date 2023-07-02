@@ -3,16 +3,17 @@ pub use crate::aarec::{Xyrect, Xzrect, Yzrect};
 pub use crate::ray::Ray;
 
 pub use crate::boxx::Boxx;
-pub use crate::rotate::Rotatey;
+pub use crate::rotate::{Translate};
 pub use crate::sphere::Sphere;
+pub use  crate::constant_medium::Fog;
 #[derive(Clone, Debug, PartialEq)]
 pub enum Object {
     Sphere(Sphere),
     Xy(Xyrect),
     Xz(Xzrect),
     Yz(Yzrect),
-    Bx(Boxx),
-    Rt(Rotatey),
+    Tr(Translate),
+    Fg(Fog),
 }
 
 impl Object {
@@ -22,8 +23,8 @@ impl Object {
             Object::Xy(z) => z.bounding_box(),
             Object::Xz(y) => y.bounding_box(),
             Object::Yz(x) => x.bounding_box(),
-            Object::Bx(x) => x.bounding_box(),
-            Object::Rt(r) => r.bounding_box(),
+            Object::Tr(r) => r.bounding_box(),
+            Object::Fg(r) => r.bounding_box(0.0,1.0),
         }
     }
 
@@ -37,8 +38,8 @@ impl Object {
             Object::Xy(z) => z.hit(r, t_min, t_max),
             Object::Xz(z) => z.hit(r, t_min, t_max),
             Object::Yz(z) => z.hit(r, t_min, t_max),
-            Object::Bx(x) => x.hit(r, t_min, t_max),
-            Object::Rt(t) => t.hit(r, t_min, t_max),
+            Object::Tr(t) => t.hit(r, t_min, t_max),
+            Object::Fg(t) => t.hit(r, t_min, t_max),
         }
     }
 }

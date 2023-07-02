@@ -100,6 +100,7 @@ fn ray_color(
             } else {
                 //t==infity
                 //没交点那就是跟背景板（完全不发光）有交点
+                //background
                 [0.0; 3]
             }
         }
@@ -175,29 +176,9 @@ fn ray_color(
                 o.emit
             }
         }
-        Object::Bx(x) => {
-            let p: Vec3 = r.at(t);
-            let n = x.normal(&r);
-            let scatter = n + random_in_unit_shpere();
-            let mut tmp = ray_color(
-                Ray {
-                    a_origin: (p),
-                    b_direction: (scatter),
-                    time: r.time,
-                },
-                bvh_tree,
-                depth - 1,
-                perlin,
-                earth,
-            );
-            for (l, _) in tmp.clone().iter_mut().enumerate() {
-                tmp[l] *= x.emit[l];
-            }
-            tmp
-        }
-        Object::Rt(rt) => {
+        Object::Tr(tr) => {
             //println!("hit rotate");
-            let (p, normal) = rt.p_nor(t, &r);
+            let (p, normal) = tr.p_nor(t, &r);
             let scatter = normal + random_in_unit_shpere();
             let mut tmp = ray_color(
                 Ray {
@@ -211,9 +192,28 @@ fn ray_color(
                 earth,
             );
             for (l, _) in tmp.clone().iter_mut().enumerate() {
-                tmp[l] *= rt.bx.emit[l];
+                tmp[l] *= tr.bx_tr.bx_ro.emit[l];
             }
             tmp
+        }
+        Object::Fg(fg)=>{
+            let (p, normal) = fg.p_nor(t, &r);
+            let scatter = normal + random_in_unit_shpere();
+            let mut tmp = ray_color(
+                Ray {
+                    a_origin: (p),
+                    b_direction: (scatter),
+                    time: r.time,
+                },
+                bvh_tree,
+                depth - 1,
+                perlin,
+                earth,
+            );
+            for (l, _) in tmp.clone().iter_mut().enumerate() {
+                tmp[l] *= fg.color[l];
+            }
+            tmp            
         }
     }
 }
