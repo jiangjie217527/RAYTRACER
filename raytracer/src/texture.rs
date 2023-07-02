@@ -72,7 +72,7 @@ impl Perlin {
         tmp
     }
 
-    pub fn permute(v: &mut Vec<i32>) {
+    pub fn permute(v: &mut [i32]) {
         let mut random: ThreadRng = rand::thread_rng();
         for i in (1..255).rev() {
             let target = random.gen_range(0..i);

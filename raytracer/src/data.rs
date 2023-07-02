@@ -2,7 +2,7 @@ pub use crate::sphere::Sphere;
 pub use crate::util::color;
 pub use crate::util::unit_vec;
 pub use crate::vec3::Vec3;
-use rand::{rngs::ThreadRng, Rng};
+// use rand::{rngs::ThreadRng, Rng};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Data {
@@ -37,7 +37,7 @@ impl Data {
         }
     }
 }
-
+/*
 pub fn init() -> Vec<Sphere> {
     let mut v = vec![
         Sphere {
@@ -157,32 +157,34 @@ pub fn init() -> Vec<Sphere> {
     }
     v
 }
+*/
 
-
-pub fn two_perlin_spheres()->Vec<Sphere>{
-    vec![        Sphere {
-        //ground
-        center: (Vec3::new(0.0, -1000.0, 0.0)),
-        destinity: (Vec3::new(0.0, -1000.0, 0.0)),
-        r: (1000.0),
-        tp: (1),
-        color: ([128, 128, 128]),
-        fuzz: (0.0),
-        etia: (0.0),
-        time1: (0.0),
-        texture_type: (2),
-        time2: (1.0),
-    },
-    Sphere {
-        center: (Vec3::new(0.0, 2.0, 0.0)),
-        destinity: (Vec3::new(0.0, 2.0, 0.0)),
-        r: (2.0),
-        tp: (1),
-        color: ([128, 128, 128]),
-        fuzz: (0.0),
-        etia: (0.0),
-        time1: (0.0),
-        texture_type: (2),
-        time2: (1.0),
-    }]
+pub fn two_perlin_spheres() -> Vec<Sphere> {
+    vec![
+        Sphere {
+            //ground
+            center: (Vec3::new(0.0, -1000.0, 0.0)),
+            destinity: (Vec3::new(0.0, -1000.0, 0.0)),
+            r: (1000.0),
+            tp: (1),
+            color: ([128, 128, 128]),
+            fuzz: (0.0),
+            etia: (0.0),
+            time1: (0.0),
+            texture_type: (2),
+            time2: (1.0),
+        },
+        Sphere {
+            center: (Vec3::new(0.0, 2.0, 0.0)),
+            destinity: (Vec3::new(0.0, 2.0, 0.0)),
+            r: (2.0),
+            tp: (1),
+            color: ([128, 128, 128]),
+            fuzz: (0.0),
+            etia: (0.0),
+            time1: (0.0),
+            texture_type: (2),
+            time2: (1.0),
+        },
+    ]
 }

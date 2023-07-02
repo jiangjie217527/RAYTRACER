@@ -1,10 +1,10 @@
 pub use crate::aabb::{Aabb, BvhNode};
 pub use crate::camera::Camera;
 pub use crate::color::write_color;
-pub use crate::data::{init, two_perlin_spheres, Data};
+pub use crate::data::{two_perlin_spheres, Data};
 pub use crate::ray::Ray;
 pub use crate::sphere::Sphere;
-pub use crate::test_scene::{init_debug2, sphere_debug2};
+//pub use crate::test_scene::{init_debug2, sphere_debug2};
 pub use crate::texture::{checher_color_value, Perlin};
 pub use crate::util::{
     color, hittable, random_in_unit_disk, random_in_unit_shpere, ray_dir, reflect, refract,
@@ -88,18 +88,18 @@ fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32, perlin: &Perlin) -> [f64; 3
         if sphere.tp != 3 {
             if sphere.texture_type == 0 {
                 for (l, _) in tmp.clone().iter_mut().enumerate() {
-                    tmp[l] = tmp[l] * sphere.color[l] as f64 / 255.0;
+                    tmp[l] *= sphere.color[l] as f64 / 255.0;
                 }
             } else if sphere.texture_type == 1 {
                 //let (u,v) = get_uv(normal.clone());
                 let sphere_texture = checher_color_value(normal * sphere.r);
                 for (l, _) in tmp.clone().iter_mut().enumerate() {
-                    tmp[l] = tmp[l] * sphere_texture[l];
+                    tmp[l] *= sphere_texture[l];
                 }
             } else {
                 let sphere_texture = perlin.noise(&(normal * sphere.r));
                 for (l, _) in tmp.clone().iter_mut().enumerate() {
-                    tmp[l] = tmp[l] * sphere_texture;
+                    tmp[l] *= sphere_texture;
                 }
             }
         }
@@ -117,8 +117,7 @@ fn ray_color(r: Ray, bvh_tree: &BvhNode, depth: u32, perlin: &Perlin) -> [f64; 3
 }
 
 pub fn pixel_color(
-    i: usize,
-    j: usize,
+    (i, j): (usize, usize),
     camera: &Camera,
     bvh_tree: &BvhNode,
     width: usize,
@@ -188,7 +187,7 @@ pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<
 
                 for _k in 0..sample {
                     let tmp_pixel_color: [f64; 3] =
-                        pixel_color(i, j, &c, &bvh_node, width, height, depth, &perlin);
+                        pixel_color((i, j), &c, &bvh_node, width, height, depth, &perlin);
                     for i in 0..3 {
                         sum_pixel_color[i] += tmp_pixel_color[i];
                     }

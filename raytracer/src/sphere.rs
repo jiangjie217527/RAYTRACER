@@ -36,31 +36,31 @@ impl Sphere {
             (-1.0, 0.0)
         }
     }
-    pub fn new(
-        center: Vec3,
-        destinity: Vec3,
-        time1: f64,
-        time2: f64,
-        r: f64,
-        tp: u8,
-        color: [u8; 3],
-        fuzz: f64,
-        etia: f64,
-        texture_type: u8,
-    ) -> Self {
-        Self {
-            center,
-            time1,
-            time2,
-            r,
-            tp,
-            fuzz,
-            color,
-            etia,
-            destinity,
-            texture_type,
-        }
-    }
+    // pub fn new(
+    //     center: Vec3,
+    //     destinity: Vec3,
+    //     time1: f64,
+    //     time2: f64,
+    //     r: f64,
+    //     tp: u8,
+    //     color: [u8; 3],
+    //     fuzz: f64,
+    //     etia: f64,
+    //     texture_type: u8,
+    // ) -> Self {
+    //     Self {
+    //         center,
+    //         time1,
+    //         time2,
+    //         r,
+    //         tp,
+    //         fuzz,
+    //         color,
+    //         etia,
+    //         destinity,
+    //         texture_type,
+    //     }
+    // }
     pub fn empty_sphere() -> Self {
         Self {
             tp: (255),

@@ -5,7 +5,7 @@ mod data;
 mod ray;
 mod render;
 mod sphere;
-mod test_scene;
+//mod test_scene;
 mod texture;
 mod util;
 mod vec3;
