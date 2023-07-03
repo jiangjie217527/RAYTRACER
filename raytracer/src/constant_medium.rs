@@ -40,9 +40,12 @@ impl Fog {
     ) -> f64 {
         // let enabledebug = false;
         // let debugging = enabledebug && random_f64() < 0.00001;
+        //println!("{}",self.boundary.r);
+        //r.info();
         let mut t1 =self
         .boundary
-        .hit_sphere(r, 0.0, f64::INFINITY);
+        .hit_sphere(r, -f64::INFINITY, f64::INFINITY);
+        //println!("{}",t1);
         if t1==f64::INFINITY{
             return f64::INFINITY;
         }
@@ -53,6 +56,7 @@ impl Fog {
         if t2 == f64::INFINITY{
             return f64::INFINITY;
         }
+        //println!("{},{}",t1,t2);
         // if debugging {
         //     println!("\nt_min={},\nt_max={}", rec1.t, rec2.t);
         // }
@@ -72,10 +76,11 @@ impl Fog {
         let ray_length = r.b_direction.length();
         let distance_inside_boundary = (t2 - t1) * ray_length;
         let hit_distance = self.neg_inv_density * random_f64_0_1().ln();
-
+        
         if hit_distance > distance_inside_boundary {
             return f64::INFINITY;
         }
+        
         t1+hit_distance / ray_length
         // rec.t = rec1.t + ;
         // rec.point3 = r.at(rec.t);

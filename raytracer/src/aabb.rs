@@ -74,12 +74,12 @@ impl Aabb {
             Ordering::Equal
         }
     }
-    // pub fn info(&self) {
-    //     println!("minimum:");
-    //     self.minimum.info();
-    //     println!("maximum:");
-    //     self.maximum.info();
-    // }
+    pub fn info(&self) {
+        println!("minimum:");
+        self.minimum.info();
+        println!("maximum:");
+        self.maximum.info();
+    }
 }
 pub struct BvhNode {
     pub bd_box: Aabb,
@@ -124,8 +124,8 @@ impl BvhNode {
         }
         if t_left == f64::INFINITY && t_right == f64::INFINITY {
             let tmp = self.object.hit_object(r, t_min, t_max);
-            if tmp == f64::INFINITY {
-                (tmp, Object::empty())
+            if tmp < t_min||tmp>t_max {
+                (f64::INFINITY, Object::empty())
             } else {
                 (tmp, self.object.clone())
             }

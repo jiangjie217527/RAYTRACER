@@ -19,7 +19,7 @@ use rand::{rngs::ThreadRng, Rng};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-fn ray_color(
+pub fn ray_color(
     r: Ray,
     bvh_tree: &BvhNode,
     depth: u32,
@@ -32,77 +32,7 @@ fn ray_color(
     let (t, obj) = hittable(r.clone(), bvh_tree); //处理最近的光线交点
     match obj {
         Object::Sphere(sphere) => {
-            if t != f64::INFINITY {
-                //有正确的交点
-                let p: Vec3 = r.at(t);
-                let normal: Vec3 = unit_vec(p - sphere.center);
-                let mut scatter: Vec3 = Vec3::ones();
-                if sphere.tp == 4 {
-                    return sphere.emit;
-                }
-                //漫反射材料
-                if sphere.tp == 1 {
-                    scatter = normal + random_in_unit_shpere();
-                }
-                //金属材料
-                else if sphere.tp == 2 {
-                    scatter = reflect(unit_vec(r.b_direction), normal)
-                        + random_in_unit_shpere() * sphere.fuzz;
-                } else if sphere.tp == 3 {
-                    //折射
-                    let ratio;
-                    let dir;
-                    if sphere.front_back(r.b_direction, normal) {
-                        ratio = 1.0 / sphere.etia;
-                        dir = 1.0;
-                    } else {
-                        ratio = sphere.etia;
-                        dir = -1.0;
-                    }
-                    scatter = refract(unit_vec(r.b_direction), normal * dir, ratio);
-                }
-                let mut tmp: [f64; 3];
-                tmp = ray_color(
-                    Ray {
-                        a_origin: (p),
-                        b_direction: (scatter),
-                        time: r.time,
-                    },
-                    bvh_tree,
-                    depth - 1,
-                    perlin,
-                    earth,
-                );
-                if sphere.tp < 3 {
-                    if sphere.texture_type == 0 {
-                        for (l, _) in tmp.clone().iter_mut().enumerate() {
-                            tmp[l] *= sphere.color[l] as f64 / 255.0;
-                        }
-                    } else if sphere.texture_type == 1 {
-                        let sphere_texture = checher_color_value(normal * sphere.r);
-                        for (l, _) in tmp.clone().iter_mut().enumerate() {
-                            tmp[l] *= sphere_texture[l];
-                        }
-                    } else if sphere.texture_type == 2 {
-                        let sphere_texture = perlin.turb(&(normal * sphere.r));
-                        for (l, _) in tmp.clone().iter_mut().enumerate() {
-                            tmp[l] *= 0.5 * (1.0 + (0.1 * p.z() + 10.0 * sphere_texture).sin());
-                        }
-                    } else {
-                        let (u, v) = get_uv(normal);
-                        let color = earth.value(u, v);
-                        for (l, _) in tmp.clone().iter_mut().enumerate() {
-                            tmp[l] *= color[l];
-                        }
-                    }
-                }
-                tmp
-            } else {
-                //t==infity
-                //没交点那就是跟背景板（完全不发光）有交点
-                //background
-                [0.0;3]
-            }
+            sphere.sphere_color(t, &r, bvh_tree, depth, perlin, earth)
         }
         Object::Xy(o) => {
             if o.tp == 1 {
@@ -177,28 +107,63 @@ fn ray_color(
             }
         }
         Object::Tr(tr) => {
-            //println!("hit rotate");
-            let (p, normal) = tr.p_nor(t, &r);
-            let scatter = normal + random_in_unit_shpere();
-            let mut tmp = ray_color(
-                Ray {
-                    a_origin: (p),
-                    b_direction: (scatter),
-                    time: r.time,
-                },
-                bvh_tree,
-                depth - 1,
-                perlin,
-                earth,
-            );
-            for (l, _) in tmp.clone().iter_mut().enumerate() {
-                tmp[l] *= tr.bx_tr.bx_ro.emit[l];
+            // println!("hit rotate");
+            // let (p, normal) = tr.p_nor(t, &r);
+            // p.info();
+            let (t,s) = tr.hit(&r, 0.001, f64::INFINITY);
+            
+            match s {
+                Object::Sphere(sph)=>{
+                    // println!("{}",t);
+                    // sph.info();
+                    // return [1.0;3];
+                    //sph.info();
+                    sph.sphere_color(t, &r, bvh_tree, depth, perlin, earth)
+                }
+                _=>{
+                    let (p, normal) = tr.p_nor(t, &r);
+                    let scatter = normal + random_in_unit_shpere();
+                    let mut tmp = ray_color(
+                        Ray {
+                            a_origin: (p),
+                            b_direction: (scatter),
+                            time: r.time,
+                        },
+                        bvh_tree,
+                        depth - 1,
+                        perlin,
+                        earth,
+                    );
+                    for (l, _) in tmp.clone().iter_mut().enumerate() {
+                        tmp[l] *= tr.bx_tr.bx_ro.emit[l];
+                    }
+                    tmp                    
+                }
             }
-            tmp
+
+            // return ;
+            // let (p, normal) = tr.p_nor(t, &r);
+            // let scatter = normal + random_in_unit_shpere();
+            // let mut tmp = ray_color(
+            //     Ray {
+            //         a_origin: (p),
+            //         b_direction: (scatter),
+            //         time: r.time,
+            //     },
+            //     bvh_tree,
+            //     depth - 1,
+            //     perlin,
+            //     earth,
+            // );
+            // for (l, _) in tmp.clone().iter_mut().enumerate() {
+            //     tmp[l] *= tr.bx_tr.bx_ro.emit[l];
+            // }
+            // tmp
         }
         Object::Fg(fg)=>{
-            let (p, normal) = fg.p_nor(t, &r);
-            let scatter = normal + random_in_unit_shpere();
+            // println!("hit fog");
+            let (p, _) = fg.p_nor(t, &r);
+            let scatter =  random_in_unit_shpere();
             let mut tmp = ray_color(
                 Ray {
                     a_origin: (p),
@@ -260,7 +225,7 @@ pub fn render(data: &Data, camera: Camera, bar: ProgressBar) -> ImageBuffer<Rgb<
     let object_list: Vec<Object> = final_scene();
     let mut bvh_tree = BvhNode::new(&Object::empty());
     bvh_tree.build(object_list.clone(), 0, object_list.len());
-
+    // return img;
     let perlin = Perlin::init();
     let earth = ImageTexture::new("earthmap.jpg");
     //bvh_tree.info();

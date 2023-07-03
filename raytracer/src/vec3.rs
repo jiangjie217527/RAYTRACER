@@ -107,9 +107,9 @@ impl Vec3 {
         }
     }
 
-    // pub fn info(&self) {
-    //     println!("x={},y={},z={}", self.x, self.y, self.z);
-    // }
+    pub fn info(&self) {
+        println!("x={},y={},z={}", self.x, self.y, self.z);
+    }
 }
 
 impl Add for Vec3 {

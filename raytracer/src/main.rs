@@ -39,7 +39,7 @@ fn main() {
     println!("CI: {}", is_ci);
     let path = "output/test.jpg";
     //let data = Data::new(1000, 1500, 60, 2, 100, 40);
-    let data = Data::new(800, 800, 60, 2, 32, 50);
+    let data = Data::new(800, 800, 60, 2, 100, 50);
     let origin = Vec3::new(478.0, 278.0, -600.0);
     let lookat = Vec3::new(278.0, 278.0, 0.0);
     let camera0 = Camera::new(
@@ -58,7 +58,7 @@ fn main() {
     };
 
     let img: RgbImage = render(&data, camera0, bar); //data一定要引用
-
+    // return ;
     // Output image to file
     println!("Ouput image as \"{}\"\n Author: {}", path, AUTHOR);
     let output_image: image::DynamicImage = image::DynamicImage::ImageRgb8(img);

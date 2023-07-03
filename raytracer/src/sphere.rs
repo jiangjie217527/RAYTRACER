@@ -1,6 +1,12 @@
 pub use crate::aabb::Aabb;
 pub use crate::ray::Ray;
-pub use crate::util::fabs;
+pub use crate::util::{
+    color, hittable, random_in_unit_disk, random_in_unit_shpere, ray_dir, reflect, refract,
+    unit_vec,fabs
+};
+pub use crate::render::ray_color;
+pub use crate::aabb:: BvhNode;
+pub use crate::texture::{checher_color_value, get_uv, ImageTexture, Perlin};
 pub use crate::vec3::Vec3;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Sphere {
@@ -112,4 +118,85 @@ impl Sphere {
             ),
         )
     }
+    pub fn sphere_color(&self,t:f64,r:&Ray,bvh_tree: &BvhNode,
+        depth: u32,
+        perlin: &Perlin,
+        earth: &ImageTexture,)->[f64;3]{
+        if t != f64::INFINITY {
+            //有正确的交点
+            let p: Vec3 = r.at(t);
+            let normal: Vec3 = unit_vec(p - self.center);
+            let mut scatter: Vec3 = Vec3::ones();
+            if self.tp == 4 {
+                return self.emit;
+            }
+            //漫反射材料
+            if self.tp == 1 {
+                scatter = normal + random_in_unit_shpere();
+            }
+            //金属材料
+            else if self.tp == 2 {
+                scatter = reflect(unit_vec(r.b_direction), normal)
+                    + random_in_unit_shpere() * self.fuzz;
+            } else if self.tp == 3 {
+                //折射
+                let ratio;
+                let dir;
+                if self.front_back(r.b_direction, normal) {
+                    ratio = 1.0 / self.etia;
+                    dir = 1.0;
+                } else {
+                    ratio = self.etia;
+                    dir = -1.0;
+                }
+                scatter = refract(unit_vec(r.b_direction), normal * dir, ratio);
+            }
+            let mut tmp: [f64; 3];
+            tmp = ray_color(
+                Ray {
+                    a_origin: (p),
+                    b_direction: (scatter),
+                    time: r.time,
+                },
+                bvh_tree,
+                depth - 1,
+                perlin,
+                earth,
+            );
+            if self.tp < 3 {
+                if self.texture_type == 0 {
+                    for (l, _) in tmp.clone().iter_mut().enumerate() {
+                        tmp[l] *= self.color[l] as f64 / 255.0;
+                    }
+                } else if self.texture_type == 1 {
+                    let sphere_texture = checher_color_value(normal * self.r);
+                    for (l, _) in tmp.clone().iter_mut().enumerate() {
+                        tmp[l] *= sphere_texture[l];
+                    }
+                } else if self.texture_type == 2 {
+                    let sphere_texture = perlin.turb(&(normal * self.r));
+                    for (l, _) in tmp.clone().iter_mut().enumerate() {
+                        tmp[l] *= 0.5 * (1.0 + (0.1 * p.z() + 10.0 * sphere_texture).sin());
+                    }
+                } else {
+                    let (u, v) = get_uv(normal);
+                    let color = earth.value(u, v);
+                    for (l, _) in tmp.clone().iter_mut().enumerate() {
+                        tmp[l] *= color[l];
+                    }
+                }
+            }
+            tmp
+        } else {
+            //t==infity
+            //没交点那就是跟背景板（完全不发光）有交点
+            //background
+            [0.0;3]
+        }
+    }
+
+    pub fn info(&self){
+        self.center.info();
+    }
+
 }

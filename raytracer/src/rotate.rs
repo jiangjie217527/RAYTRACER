@@ -3,6 +3,7 @@ pub use crate::boxx::Boxx;
 pub use crate::ray::Ray;
 pub use crate::util::{fmax, fmin};
 pub use crate::vec3::Vec3;
+pub use crate::world::Object;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Rotatey {
@@ -12,6 +13,10 @@ pub struct Rotatey {
     pub bx_ro: Boxx,
 }
 impl Rotatey {
+    // pub fn info(&self){
+    //     self.bbox.info();
+    // }
+
     pub fn new(radians: f64, bx_ro: Boxx) -> Self {
         let mut bounbox = bx_ro.bounding_box();
         let sin_theta = radians.sin();
@@ -46,7 +51,6 @@ impl Rotatey {
             }
         }
         bounbox = Aabb::new(min, max);
-        //bounbox.info();
         Self {
             sin_theta,
             cos_theta,
@@ -54,7 +58,7 @@ impl Rotatey {
             bx_ro,
         }
     }
-    pub fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> f64 {
+    pub fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> (f64,Object) {
         let mut origin = r.a_origin;
         let mut direction = r.b_direction;
         origin.x = self.cos_theta * r.a_origin.x() - self.sin_theta * r.a_origin.z();
@@ -65,6 +69,7 @@ impl Rotatey {
 
         let rotated_r = Ray::new(origin, direction, r.time);
 
+        //球不需要旋转
         self.bx_ro.hit(&rotated_r, t_min, t_max)
     }
 
@@ -108,14 +113,25 @@ impl Translate{
         Self { bx_tr, offset}
     }
     pub fn bounding_box(&self) -> Aabb {
-        Aabb::new(
+        let tmp =Aabb::new(
         self.bx_tr.bbox.minimum+self.offset,
-        self.bx_tr.bbox.maximum+self.offset)
+        self.bx_tr.bbox.maximum+self.offset);
+
+        // tmp.info();
+        // self.offset.info();
+        tmp
     }
 
-    pub fn hit(&self,r:&Ray,t_min:f64,t_max:f64)->f64{
+    pub fn hit(&self,r:&Ray,t_min:f64,t_max:f64)->(f64,Object){
         let moved_ray = Ray::new(r.a_origin-self.offset, r.b_direction, r.time);
-        self.bx_tr.hit(&moved_ray, t_min, t_max)
+        let   (t,obj)=self.bx_tr.hit(&moved_ray, t_min, t_max);
+        match obj{
+            Object::Sphere(mut s)=>{
+                s.center=s.center+ self.offset;
+                (t,Object::Sphere(s))
+            },
+            other=>{(t,other)}
+        }
     }
 
     pub fn p_nor(&self, t: f64, r: &Ray) -> (Vec3, Vec3){

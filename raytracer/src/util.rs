@@ -165,8 +165,8 @@ pub fn hittable(r: Ray, bvh_tree: &BvhNode) -> (f64, Object) {
     //let mut t = f64::INFINITY;
     let t_min = 0.001;
     //let mut sphere = &Sphere::empty_sphere();
-    let (t, sphere) = bvh_tree.hit(&r, t_min, f64::INFINITY);
-    (t, sphere)
+    let (t, obj) = bvh_tree.hit(&r, t_min, f64::INFINITY);
+    (t, obj)
 }
 // for i in v {
 //     let (tmp, delta) = i.hit_sphere(r.clone());

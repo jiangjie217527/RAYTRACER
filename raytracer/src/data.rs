@@ -7,6 +7,7 @@ pub use crate::util::color;
 pub use crate::util::{unit_vec,random_cen_165,random_f64_101};
 pub use crate::vec3::Vec3;
 pub use crate::world::Object;
+pub use crate::ray::Ray;
 // use rand::{rngs::ThreadRng, Rng};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -304,19 +305,19 @@ pub fn cornell_box() -> Vec<Object> {
 pub fn final_scene()-> Vec<Object>{
     let mut v=Vec::new();
     let zero = Vec3::zero();
-    // let ground = [0.48, 0.83, 0.53];
-    // for i in 0..20{
-    //     for j in 0..20{
-    //         let w = 100.0;
-    //         let x0 = -1000.0 + i as f64*w;
-    //         let z0 = -1000.0 + j as f64*w;
-    //         let y0 = 0.0;
-    //         let x1 = x0 + w;
-    //         let y1 = random_f64_101();
-    //         let z1 = z0 + w;
-    //         v.push(Object::Tr(Translate::new(Rotatey::new(0.0, Boxx::new(Vec3::new(x0, y0, z0), Vec3::new(x1, y1, z1), ground, 1)), zero)))
-    //     }
-    // }
+    let ground = [0.48, 0.83, 0.53];
+    for i in 0..20{
+        for j in 0..20{
+            let w = 100.0;
+            let x0 = -1000.0 + i as f64*w;
+            let z0 = -1000.0 + j as f64*w;
+            let y0 = 0.0;
+            let x1 = x0 + w;
+            let y1 = random_f64_101();
+            let z1 = z0 + w;
+            v.push(Object::Tr(Translate::new(Rotatey::new(0.0, Boxx::new(Vec3::new(x0, y0, z0), Vec3::new(x1, y1, z1), ground, 1)), zero)))
+        }
+    }
 
     let light = [7.0;3];
     v.push(Object::Xz(Xzrect::new(123.0, 423.0, 147.0, 412.0, 554.0, light,2)));
@@ -336,19 +337,23 @@ pub fn final_scene()-> Vec<Object>{
     v.push(Object::Sphere(Sphere { tp: (2), center: (center4), destinity: (center4), time1: (0.0), time2: (1.0), r: (50.0), color: ([204, 204,229]), emit: ([0.0;3]), fuzz: (1.0), etia: (0.0), texture_type: (0) }));
 
     v.push(Object::Sphere(Sphere { tp: (3), center: (center5), destinity: (center5), time1: (0.0), time2: (1.0), r: (70.0), color: ([0;3]), emit: ([1.0;3]), fuzz: (0.0), etia: (1.5), texture_type: (0) }));
-    //v.push(Object::Fg(Fog::new(Sphere { tp: (3), center: (center5), destinity: (center5), time1: (0.0), time2: (0.0), r: (70.0), color: ([0;3]), emit: ([0.0;3]), fuzz: (0.0), etia: (1.5), texture_type: (0) }, 0.2, [0.2, 0.4, 0.9])));
-    //v.push(Object::Fg(Fog::new(Sphere { tp: (3), center: (center6), destinity: (center6), time1: (0.0), time2: (0.0), r: (5000.0), color: ([0;3]), emit: ([0.0;3]), fuzz: (0.0), etia: (1.5), texture_type: (0) }, 0.0001, [1.0;3])));
-
+    v.push(Object::Fg(Fog::new(Sphere { tp: (3), center: (center5), destinity: (center5), time1: (0.0), time2: (1.0), r: (70.0), color: ([0;3]), emit: ([0.0;3]), fuzz: (0.0), etia: (1.5), texture_type: (0) }, 0.2, [0.2, 0.4, 0.9])));
+    v.push(Object::Fg(Fog::new(Sphere { tp: (3), center: (center6), destinity: (center6), time1: (0.0), time2: (1.0), r: (5000.0), color: ([0;3]), emit: ([0.0;3]), fuzz: (0.0), etia: (1.5), texture_type: (0) }, 0.0001, [1.0;3])));
+    // let t =Sphere { tp: (3), center: (center6), destinity: (center6), time1: (0.0), time2: (1.0), r: (5000.0), color: ([0;3]), emit: ([0.0;3]), fuzz: (0.0), etia: (1.5), texture_type: (0) }.hit_sphere(&Ray { a_origin: (Vec3::new(478.0, 278.0, -600.0)), b_direction: (Vec3::new(278.0, 278.0, 0.0)-Vec3::new(478.0, 278.0, -600.0)), time: (0.0) }, -f64::INFINITY, f64::INFINITY);
     v.push(Object::Sphere(Sphere { tp: (1), center: (center7), destinity: (center7), time1: (0.0), time2: (1.0), r: (100.0), color: ([0;3]), emit: ([0.0;3]), fuzz: (0.0), etia: (0.0), texture_type: (3) }));
     v.push(Object::Sphere(Sphere { tp: (1), center: (center8), destinity: (center8), time1: (0.0), time2: (1.0), r: (80.0), color: ([0;3]), emit: ([0.0;3]), fuzz: (0.0), etia: (0.0), texture_type: (2) }));
 
     let white: [u8; 3] = [186;3];
     let mut sphere_box = Boxx::empty();
+    //let c = random_cen_165()+Vec3::new(-100.0,270.0,395.0);
+    let offset = Vec3::new(-100.0,270.0,395.0);
+    //v.push(Object::Sphere(Sphere { tp: (4), center: (c), destinity: (c), time1: (0.0), time2: (1.0), r: (10.0), color: (white), emit: ([7.0;3]), fuzz: (0.0), etia: (0.0), texture_type: (0) }));
     for _ in 0..1000{
         let c = random_cen_165();
-        sphere_box.add(Object::Sphere(Sphere { tp: (1), center: (c), destinity: (c), time1: (0.0), time2: (1.0), r: (10.0), color: (white), emit: ([0.0;3]), fuzz: (0.0), etia: (0.0), texture_type: (0) }));
+        sphere_box.add(Object::Sphere(Sphere { tp: (1), center: (c), destinity: (c), time1: (0.0), time2: (1.0), r: (10.0), color: (white), emit: ([1.0;3]), fuzz: (0.0), etia: (0.0), texture_type: (0) }));
     }
-    v.push(Object::Tr(Translate::new(Rotatey::new(std::f64::consts::PI/12.0,sphere_box), zero)));
+    sphere_box.reset_box();
+    v.push(Object::Tr(Translate::new(Rotatey::new(std::f64::consts::PI/12.0,sphere_box), offset)));
 
     v
 }

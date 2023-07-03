@@ -17,4 +17,10 @@ impl Ray {
     pub fn at(&self, t: f64) -> Vec3 {
         self.a_origin + self.b_direction * t
     }
+    pub fn info(&self){
+        println!("ori");
+        self.a_origin.info();
+        println!("dir");
+        self.b_direction.info();
+    }
 }

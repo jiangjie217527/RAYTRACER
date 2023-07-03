@@ -38,7 +38,10 @@ impl Object {
             Object::Xy(z) => z.hit(r, t_min, t_max),
             Object::Xz(z) => z.hit(r, t_min, t_max),
             Object::Yz(z) => z.hit(r, t_min, t_max),
-            Object::Tr(t) => t.hit(r, t_min, t_max),
+            Object::Tr(t) => {
+                let (x,_)=t.hit(r, t_min, t_max);
+                x
+            },
             Object::Fg(t) => t.hit(r, t_min, t_max),
         }
     }
