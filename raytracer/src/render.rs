@@ -31,9 +31,7 @@ pub fn ray_color(
     }
     let (t, obj) = hittable(r.clone(), bvh_tree); //处理最近的光线交点
     match obj {
-        Object::Sphere(sphere) => {
-            sphere.sphere_color(t, &r, bvh_tree, depth, perlin, earth)
-        }
+        Object::Sphere(sphere) => sphere.sphere_color(t, &r, bvh_tree, depth, perlin, earth),
         Object::Xy(o) => {
             if o.tp == 1 {
                 let p: Vec3 = r.at(t);
@@ -110,17 +108,17 @@ pub fn ray_color(
             // println!("hit rotate");
             // let (p, normal) = tr.p_nor(t, &r);
             // p.info();
-            let (t,s) = tr.hit(&r, 0.001, f64::INFINITY);
-            
+            let (t, s) = tr.hit(&r, 0.001, f64::INFINITY);
+
             match s {
-                Object::Sphere(sph)=>{
+                Object::Sphere(sph) => {
                     // println!("{}",t);
                     // sph.info();
                     // return [1.0;3];
                     //sph.info();
                     sph.sphere_color(t, &r, bvh_tree, depth, perlin, earth)
                 }
-                _=>{
+                _ => {
                     let (p, normal) = tr.p_nor(t, &r);
                     let scatter = normal + random_in_unit_shpere();
                     let mut tmp = ray_color(
@@ -137,7 +135,7 @@ pub fn ray_color(
                     for (l, _) in tmp.clone().iter_mut().enumerate() {
                         tmp[l] *= tr.bx_tr.bx_ro.emit[l];
                     }
-                    tmp                    
+                    tmp
                 }
             }
 
@@ -160,10 +158,10 @@ pub fn ray_color(
             // }
             // tmp
         }
-        Object::Fg(fg)=>{
+        Object::Fg(fg) => {
             // println!("hit fog");
             let (p, _) = fg.p_nor(t, &r);
-            let scatter =  random_in_unit_shpere();
+            let scatter = random_in_unit_shpere();
             let mut tmp = ray_color(
                 Ray {
                     a_origin: (p),
@@ -178,7 +176,7 @@ pub fn ray_color(
             for (l, _) in tmp.clone().iter_mut().enumerate() {
                 tmp[l] *= fg.color[l];
             }
-            tmp            
+            tmp
         }
     }
 }

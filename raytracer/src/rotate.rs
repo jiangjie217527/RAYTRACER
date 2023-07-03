@@ -58,7 +58,7 @@ impl Rotatey {
             bx_ro,
         }
     }
-    pub fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> (f64,Object) {
+    pub fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> (f64, Object) {
         let mut origin = r.a_origin;
         let mut direction = r.b_direction;
         origin.x = self.cos_theta * r.a_origin.x() - self.sin_theta * r.a_origin.z();
@@ -98,45 +98,42 @@ impl Rotatey {
         (pp, nnormal)
     }
 
-    pub fn bounding_box(&self) -> Aabb {
-        self.bbox.clone()
-    }
+    // pub fn bounding_box(&self) -> Aabb {
+    //     self.bbox.clone()
+    // }
 }
 #[derive(Clone, Debug, PartialEq)]
-pub struct Translate{
-    pub bx_tr:Rotatey,
-    offset:Vec3
+pub struct Translate {
+    pub bx_tr: Rotatey,
+    offset: Vec3,
 }
 
-impl Translate{
-    pub fn new(bx_tr:Rotatey,offset:Vec3)->Self{
-        Self { bx_tr, offset}
+impl Translate {
+    pub fn new(bx_tr: Rotatey, offset: Vec3) -> Self {
+        Self { bx_tr, offset }
     }
     pub fn bounding_box(&self) -> Aabb {
-        let tmp =Aabb::new(
-        self.bx_tr.bbox.minimum+self.offset,
-        self.bx_tr.bbox.maximum+self.offset);
-
-        // tmp.info();
-        // self.offset.info();
-        tmp
+        Aabb::new(
+            self.bx_tr.bbox.minimum + self.offset,
+            self.bx_tr.bbox.maximum + self.offset,
+        )
     }
 
-    pub fn hit(&self,r:&Ray,t_min:f64,t_max:f64)->(f64,Object){
-        let moved_ray = Ray::new(r.a_origin-self.offset, r.b_direction, r.time);
-        let   (t,obj)=self.bx_tr.hit(&moved_ray, t_min, t_max);
-        match obj{
-            Object::Sphere(mut s)=>{
-                s.center=s.center+ self.offset;
-                (t,Object::Sphere(s))
-            },
-            other=>{(t,other)}
+    pub fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> (f64, Object) {
+        let moved_ray = Ray::new(r.a_origin - self.offset, r.b_direction, r.time);
+        let (t, obj) = self.bx_tr.hit(&moved_ray, t_min, t_max);
+        match obj {
+            Object::Sphere(mut s) => {
+                s.center += self.offset;
+                (t, Object::Sphere(s))
+            }
+            other => (t, other),
         }
     }
 
-    pub fn p_nor(&self, t: f64, r: &Ray) -> (Vec3, Vec3){
-        let moved_ray = Ray::new(r.a_origin-self.offset, r.b_direction, r.time);
-        let (p,normal) = self.bx_tr.p_nor(t, &moved_ray);
-        (p+self.offset,normal)
+    pub fn p_nor(&self, t: f64, r: &Ray) -> (Vec3, Vec3) {
+        let moved_ray = Ray::new(r.a_origin - self.offset, r.b_direction, r.time);
+        let (p, normal) = self.bx_tr.p_nor(t, &moved_ray);
+        (p + self.offset, normal)
     }
 }

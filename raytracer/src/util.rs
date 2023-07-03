@@ -37,8 +37,6 @@ pub fn fmin(v1: f64, v2: f64) -> f64 {
     }
 }
 
-
-
 pub fn fmax(v1: f64, v2: f64) -> f64 {
     if v1 > v2 {
         v1
@@ -107,18 +105,18 @@ pub fn random_f64_0_1() -> f64 {
     random.gen::<f64>()
 }
 
-pub fn random_f64_101()->f64{
+pub fn random_f64_101() -> f64 {
     let mut random: ThreadRng = rand::thread_rng();
     random.gen_range(1.0..100.0)
 }
 
-pub fn random_cen_165()->Vec3{
+pub fn random_cen_165() -> Vec3 {
     let mut random: ThreadRng = rand::thread_rng();
     Vec3::new(
         random.gen_range(0.0..165.0),
         random.gen_range(0.0..165.0),
         random.gen_range(0.0..165.0),
-    )    
+    )
 }
 
 pub fn random_in_unit_disk() -> Vec3 {

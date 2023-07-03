@@ -1,12 +1,12 @@
 pub use crate::aabb::Aabb;
+pub use crate::aabb::BvhNode;
 pub use crate::ray::Ray;
-pub use crate::util::{
-    color, hittable, random_in_unit_disk, random_in_unit_shpere, ray_dir, reflect, refract,
-    unit_vec,fabs
-};
 pub use crate::render::ray_color;
-pub use crate::aabb:: BvhNode;
 pub use crate::texture::{checher_color_value, get_uv, ImageTexture, Perlin};
+pub use crate::util::{
+    color, fabs, hittable, random_in_unit_disk, random_in_unit_shpere, ray_dir, reflect, refract,
+    unit_vec,
+};
 pub use crate::vec3::Vec3;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Sphere {
@@ -118,10 +118,15 @@ impl Sphere {
             ),
         )
     }
-    pub fn sphere_color(&self,t:f64,r:&Ray,bvh_tree: &BvhNode,
+    pub fn sphere_color(
+        &self,
+        t: f64,
+        r: &Ray,
+        bvh_tree: &BvhNode,
         depth: u32,
         perlin: &Perlin,
-        earth: &ImageTexture,)->[f64;3]{
+        earth: &ImageTexture,
+    ) -> [f64; 3] {
         if t != f64::INFINITY {
             //有正确的交点
             let p: Vec3 = r.at(t);
@@ -136,8 +141,8 @@ impl Sphere {
             }
             //金属材料
             else if self.tp == 2 {
-                scatter = reflect(unit_vec(r.b_direction), normal)
-                    + random_in_unit_shpere() * self.fuzz;
+                scatter =
+                    reflect(unit_vec(r.b_direction), normal) + random_in_unit_shpere() * self.fuzz;
             } else if self.tp == 3 {
                 //折射
                 let ratio;
@@ -191,12 +196,11 @@ impl Sphere {
             //t==infity
             //没交点那就是跟背景板（完全不发光）有交点
             //background
-            [0.0;3]
+            [0.0; 3]
         }
     }
 
-    pub fn info(&self){
-        self.center.info();
-    }
-
+    // pub fn info(&self){
+    //     self.center.info();
+    // }
 }

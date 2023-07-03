@@ -3,9 +3,9 @@ pub use crate::aarec::{Xyrect, Xzrect, Yzrect};
 pub use crate::ray::Ray;
 
 pub use crate::boxx::Boxx;
-pub use crate::rotate::{Translate};
+pub use crate::constant_medium::Fog;
+pub use crate::rotate::Translate;
 pub use crate::sphere::Sphere;
-pub use  crate::constant_medium::Fog;
 #[derive(Clone, Debug, PartialEq)]
 pub enum Object {
     Sphere(Sphere),
@@ -39,9 +39,9 @@ impl Object {
             Object::Xz(z) => z.hit(r, t_min, t_max),
             Object::Yz(z) => z.hit(r, t_min, t_max),
             Object::Tr(t) => {
-                let (x,_)=t.hit(r, t_min, t_max);
+                let (x, _) = t.hit(r, t_min, t_max);
                 x
-            },
+            }
             Object::Fg(t) => t.hit(r, t_min, t_max),
         }
     }

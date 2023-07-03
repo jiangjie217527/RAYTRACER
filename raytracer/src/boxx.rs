@@ -1,9 +1,9 @@
+pub use crate::aabb::{Aabb, BvhNode};
 pub use crate::aarec::{Xyrect, Xzrect, Yzrect};
 pub use crate::ray::Ray;
+pub use crate::sphere::Sphere;
 pub use crate::vec3::Vec3;
 pub use crate::world::Object;
-pub use crate::sphere::Sphere;
-pub use crate::aabb::{Aabb, BvhNode};
 /*
 pub fn add_box(p0: Vec3, p1: Vec3, object_list:&mut Vec<Object>,emit:[f64;3],tp:u8){
     object_list.push( Object::Xy(Xyrect::new(
@@ -75,13 +75,13 @@ impl Boxx {
         Self {
             box_min: Vec3::zero(),
             box_max: Vec3::zero(),
-            sides:Vec::new(),
+            sides: Vec::new(),
             //bvh:BvhNode::new(Sphere::empty_sphere()),
-            emit:[0.0;3]
+            emit: [0.0; 3],
         }
     }
 
-    pub fn add(&mut self,obj:Object){
+    pub fn add(&mut self, obj: Object) {
         self.sides.push(obj);
     }
     pub fn new(p0: Vec3, p1: Vec3, emit: [f64; 3], tp: u8) -> Self {
@@ -157,22 +157,21 @@ impl Boxx {
         }
     }
 
-    pub fn reset_box(&mut self){
-        let final_box=
-        Aabb::bound_box(&self.sides);
-        self.box_min=final_box.minimum;
-        self.box_max=final_box.maximum;
+    pub fn reset_box(&mut self) {
+        let final_box = Aabb::bound_box(&self.sides);
+        self.box_min = final_box.minimum;
+        self.box_max = final_box.maximum;
     }
 
     pub fn bounding_box(&self) -> Aabb {
         //Aabb::new(self.box_min, self.box_max)
         Aabb::bound_box(&self.sides)
     }
-    pub fn info(&self){
-        self.box_min.info();
-        self.box_max.info();
-    }
-    pub fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> (f64,Object) {
+    // pub fn info(&self){
+    //     self.box_min.info();
+    //     self.box_max.info();
+    // }
+    pub fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> (f64, Object) {
         let mut t = f64::INFINITY;
         let mut obj = Object::empty();
         for i in &self.sides {
@@ -197,11 +196,10 @@ impl Boxx {
                         t = tmp;
                         obj = Object::Yz(o.clone());
                     }
-                }//忘了处理球的情况了
-                Object::Sphere(s)=>{
-                    
+                } //忘了处理球的情况了
+                Object::Sphere(s) => {
                     let tmp = s.hit_sphere(r, t_min, t_max);
-                    if tmp < t{
+                    if tmp < t {
                         //s.info();
                         t = tmp;
                         obj = Object::Sphere(s.clone());
@@ -220,7 +218,7 @@ impl Boxx {
         //         _=>{}
         //     }
         // }
-        (t,obj)
+        (t, obj)
     }
 
     pub fn normal(&self, r: &Ray) -> Vec3 {

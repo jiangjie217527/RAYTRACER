@@ -8,12 +8,12 @@ mod sphere;
 //mod test_scene;
 mod aarec;
 mod boxx;
+mod constant_medium;
 mod rotate;
 mod texture;
 mod util;
 mod vec3;
 mod world;
-mod constant_medium;
 
 use image::RgbImage; //接收render传回来的图片，在main中文件输出
 use indicatif::ProgressBar; //main中产生进度条并传给render
@@ -39,7 +39,7 @@ fn main() {
     println!("CI: {}", is_ci);
     let path = "output/test.jpg";
     //let data = Data::new(1000, 1500, 60, 2, 100, 40);
-    let data = Data::new(800, 800, 60, 2, 100, 50);
+    let data = Data::new(800, 800, 60, 2, 1000, 50);
     let origin = Vec3::new(478.0, 278.0, -600.0);
     let lookat = Vec3::new(278.0, 278.0, 0.0);
     let camera0 = Camera::new(
@@ -58,8 +58,8 @@ fn main() {
     };
 
     let img: RgbImage = render(&data, camera0, bar); //data一定要引用
-    // return ;
-    // Output image to file
+                                                     // return ;
+                                                     // Output image to file
     println!("Ouput image as \"{}\"\n Author: {}", path, AUTHOR);
     let output_image: image::DynamicImage = image::DynamicImage::ImageRgb8(img);
     let mut output_file: File = File::create(path).unwrap();
