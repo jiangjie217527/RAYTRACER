@@ -211,7 +211,12 @@ pub fn pixel_color(
     ray_color(r, bvh_tree, depth, perlin, earth)
 }
 
-pub fn render(data: &Data, camera: Camera, is_ci: bool,threadnum:usize) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+pub fn render(
+    data: &Data,
+    camera: Camera,
+    is_ci: bool,
+    threadnum: usize,
+) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
     let width = data.width;
     let height = data.height;
     let depth = data.depth;
@@ -228,7 +233,6 @@ pub fn render(data: &Data, camera: Camera, is_ci: bool,threadnum:usize) -> Image
 
     let multipb = MultiProgress::new();
 
-
     //bvh_tree.info();
     //有个data也要共享内存，要么就把值都提取出来
     //上互斥锁
@@ -243,7 +247,7 @@ pub fn render(data: &Data, camera: Camera, is_ci: bool,threadnum:usize) -> Image
 
     let mut handles = vec![];
 
-    for index  in 0..threadnum{
+    for index in 0..threadnum {
         //以下开始一个线程  对共享内存的复制
         let c = Arc::clone(&cam);
         //let sph = Arc::clone(&sph_lst);
@@ -253,18 +257,18 @@ pub fn render(data: &Data, camera: Camera, is_ci: bool,threadnum:usize) -> Image
         let earth = Arc::clone(&earth);
         let mpb = Arc::clone(&multipb);
         //共享可写内存：上互斥锁
-        let image = Arc::clone(&image); 
-        let handle = thread::spawn(move ||{
-            let bar = mpb.add(ProgressBar::new((height * width/threadnum) as u64));
+        let image = Arc::clone(&image);
+        let handle = thread::spawn(move || {
+            let bar = mpb.add(ProgressBar::new((height * width / threadnum) as u64));
             let style = ProgressStyle::with_template(
                 "[{elapsed_precise}] {bar:40.red/blue} {pos:>10}/{len:10} {msg}",
             )
             .unwrap()
             .progress_chars("$>");
             bar.set_style(style);
-            for j in 0..height{
-                for i in 0..width{
-                    if (j*height+i)%threadnum == index{
+            for j in 0..height {
+                for i in 0..width {
+                    if (j * height + i) % threadnum == index {
                         let mut sum_pixel_color: [f64; 3] = [0.0; 3];
 
                         for _k in 0..sample {
@@ -286,17 +290,17 @@ pub fn render(data: &Data, camera: Camera, is_ci: bool,threadnum:usize) -> Image
                         }
                         let pixel_color: [u8; 3] =
                             color(sum_pixel_color[0], sum_pixel_color[1], sum_pixel_color[2]);
-                        //(*bar).inc(1);  
-                        if !is_ci{
-                            bar.inc(1);  
-                        }  
-                        
+                        //(*bar).inc(1);
+                        if !is_ci {
+                            bar.inc(1);
+                        }
+
                         let mut img = image.lock().unwrap();
                         write_color(pixel_color, &mut img, i, j);
                     }
                 }
             }
-            if !is_ci{
+            if !is_ci {
                 bar.finish();
             }
             //println!("线程{}运行结束,运行用时{}秒",index,now.elapsed().as_secs());
